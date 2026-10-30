@@ -664,6 +664,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                   ),
                                 ),
 
+                                
                                 // =========================
                                 // ข้อมูลสินค้า
                                 // =========================
@@ -699,15 +700,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                         ),
                                       ),
 
+                                      // สถานะสต๊อก
                                       Text(
-                                        p.stockQuantity > 0
-                                            ? 'คงเหลือ ${p.stockQuantity} ชิ้น'
-                                            : 'สินค้าหมด',
+                                        p.stockQuantity == null
+                                            ? 'ยังไม่ได้ระบุจำนวนสต๊อก'
+                                            : p.stockQuantity! > 0
+                                                ? 'คงเหลือ ${p.stockQuantity} ชิ้น'
+                                                : 'สินค้าหมด',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: p.stockQuantity > 0
-                                              ? Colors.green.shade700
-                                              : Colors.red,
+                                          color: p.stockQuantity == null
+                                              ? Colors.grey
+                                              : p.stockQuantity! > 0
+                                                  ? Colors.green.shade700
+                                                  : Colors.red,
                                         ),
                                       ),
 
@@ -737,10 +743,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             Icons.add_shopping_cart,
                                           ),
                                           tooltip: 'เพิ่มลงตะกร้า',
-                                          onPressed: p.stockQuantity > 0
-                                              ? () {
-                                                  final added = _cartController
-                                                      .addToCart(p);
+                                          onPressed:
+                                              p.stockQuantity != null &&
+                                                  p.stockQuantity! <= 0
+                                              ? null
+                                              : () {
+                                                  final added =
+                                                      _cartController.addToCart(p);
+
                                                   if (!added) {
                                                     ScaffoldMessenger.of(
                                                       context,
@@ -754,20 +764,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                     return;
                                                   }
 
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  'เพิ่ม ${p.name} ลงตะกร้าแล้ว',
-                                                ),
-                                                duration: const Duration(
-                                                  seconds: 1,
-                                                ),
-                                              ),
-                                            );
-                                                }
-                                              : null,
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        'เพิ่ม ${p.name} ลงตะกร้าแล้ว',
+                                                      ),
+                                                      duration:
+                                                          const Duration(
+                                                            seconds: 1,
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
                                         ),
                                       ),
                                     ],

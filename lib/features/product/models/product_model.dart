@@ -27,7 +27,10 @@ class Product {
   final String category;
   final List<String> imageUrls;
   final bool isActive;
-  final int stockQuantity;
+
+  // null = ยังไม่ได้กำหนดสต๊อก
+  final int? stockQuantity;
+
   final List<ProductVariant> variants;
 
   Product({
@@ -38,7 +41,7 @@ class Product {
     required this.category,
     required this.imageUrls,
     required this.isActive,
-    this.stockQuantity = 999999,
+    this.stockQuantity,
     required this.variants,
   });
 
@@ -51,10 +54,12 @@ class Product {
       category: json['category'] ?? 'ทั่วไป',
       imageUrls: List<String>.from(json['image_urls'] ?? []),
       isActive: json['is_active'] ?? true,
-      stockQuantity: (json['stock_quantity'] as num?)?.toInt() ?? 0,
+      stockQuantity: (json['stock_quantity'] as num?)?.toInt(),
       variants: json['product_variants'] != null
           ? (json['product_variants'] as List)
-              .map((v) => ProductVariant.fromJson(v))
+              .map((v) => ProductVariant.fromJson(
+                    Map<String, dynamic>.from(v),
+                  ))
               .toList()
           : [],
     );

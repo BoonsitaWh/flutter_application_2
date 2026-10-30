@@ -1,3 +1,4 @@
+
 import 'package:flutter/foundation.dart';
 import '../../product/models/product_model.dart';
 import '../models/cart_item_model.dart';
@@ -26,7 +27,10 @@ class CartController extends ChangeNotifier {
     Product product, {
     ProductVariant? selectedVariant,
   }) {
-    if (product.stockQuantity < 1) return false;
+    // ถ้ากำหนดสต๊อกไว้และเหลือน้อยกว่า 1 ชิ้น ให้ปฏิเสธ
+    final stock = product.stockQuantity;
+    if (stock != null && stock < 1) return false;
+
     final index = _items.indexWhere(
       (item) =>
           item.product.id == product.id &&
@@ -34,7 +38,10 @@ class CartController extends ChangeNotifier {
     );
 
     if (index != -1) {
-      if (_items[index].quantity >= product.stockQuantity) return false;
+      // ตรวจจำนวนเฉพาะสินค้าที่มีการกำหนดสต๊อก
+      if (stock != null && _items[index].quantity >= stock) {
+        return false;
+      }
       _items[index].quantity++;
     } else {
       _items.add(
@@ -51,7 +58,12 @@ class CartController extends ChangeNotifier {
 
   // เพิ่มจำนวนของรายการที่เลือก
   bool increaseQuantity(CartItem item) {
-    if (item.quantity >= item.product.stockQuantity) return false;
+    final stock = item.product.stockQuantity;
+
+    if (stock != null && item.quantity >= stock) {
+      return false;
+    }
+
     item.quantity++;
     notifyListeners();
     return true;

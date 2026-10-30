@@ -22,7 +22,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   // ราคาปัจจุบัน
   double get _currentPrice {
-    return widget.product.basePrice + (_selectedVariant?.additionalPrice ?? 0);
+    return widget.product.basePrice +
+        (_selectedVariant?.additionalPrice ?? 0);
   }
 
   @override
@@ -38,24 +39,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final stock = product.stockQuantity;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('รายละเอียดสินค้า')),
-
+      appBar: AppBar(
+        title: const Text('รายละเอียดสินค้า'),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // =========================
             // รูปสินค้า
-            // =========================
             Container(
               width: double.infinity,
               height: 280,
               color: Colors.orange.shade50,
               child: product.imageUrls.isEmpty
                   ? const Center(
-                      child: Icon(Icons.cake, size: 100, color: Colors.orange),
+                      child: Icon(
+                        Icons.cake,
+                        size: 100,
+                        color: Colors.orange,
+                      ),
                     )
                   : Image.network(
                       product.imageUrls.first,
@@ -70,15 +75,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
             ),
 
-            // =========================
             // ข้อมูลสินค้า
-            // =========================
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ชื่อสินค้า
                   Text(
                     product.name,
                     style: const TextStyle(
@@ -88,7 +90,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
 
                   const SizedBox(height: 8),
-                  Text('คงเหลือ ${product.stockQuantity} ชิ้น'),
+
+                  // แสดงสต๊อกโดยรองรับค่า NULL
+                  Text(
+                    stock == null
+                        ? 'ยังไม่ได้ระบุจำนวนสต๊อก'
+                        : 'คงเหลือ $stock ชิ้น',
+                  ),
 
                   const SizedBox(height: 8),
 
@@ -107,7 +115,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   // หมวดหมู่
                   Row(
                     children: [
-                      const Icon(Icons.category, color: Colors.grey),
+                      const Icon(
+                        Icons.category,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'หมวดหมู่: ${product.category}',
@@ -118,12 +129,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  // =========================
                   // รายละเอียดสินค้า
-                  // =========================
                   const Text(
                     'รายละเอียดสินค้า',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
 
                   const SizedBox(height: 8),
@@ -132,14 +144,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     product.description?.isNotEmpty == true
                         ? product.description!
                         : 'ไม่มีรายละเอียดสินค้า',
-                    style: const TextStyle(fontSize: 16, height: 1.5),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.5,
+                    ),
                   ),
 
                   const SizedBox(height: 25),
 
-                  // =========================
                   // ตัวเลือกสินค้า
-                  // =========================
                   if (product.variants.isNotEmpty) ...[
                     const Text(
                       'เลือกตัวเลือกสินค้า',
@@ -155,15 +168,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       groupValue: _selectedVariant?.id,
                       onChanged: (variantId) {
                         if (variantId == null) return;
+
                         setState(() {
-                          _selectedVariant = product.variants.firstWhere(
+                          _selectedVariant =
+                              product.variants.firstWhere(
                             (variant) => variant.id == variantId,
                           );
                         });
                       },
                       child: Column(
                         children: product.variants.map((variant) {
-                          final isSelected = _selectedVariant?.id == variant.id;
+                          final isSelected =
+                              _selectedVariant?.id == variant.id;
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
@@ -179,7 +195,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     : 'ราคาเดิม',
                               ),
                               secondary: Icon(
-                                isSelected ? Icons.check_circle : Icons.tune,
+                                isSelected
+                                    ? Icons.check_circle
+                                    : Icons.tune,
                                 color: isSelected
                                     ? Colors.green
                                     : Colors.orange,
@@ -212,54 +230,56 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // =========================
                   // ปุ่มเพิ่มลงตะกร้า
-                  // =========================
                   SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton.icon(
-                      onPressed: product.stockQuantity < 1
+                      onPressed: stock != null && stock < 1
                           ? null
                           : () {
-                        // ถ้ามีตัวเลือก
-                        // แต่ยังไม่ได้เลือก
-                        if (product.variants.isNotEmpty &&
-                            _selectedVariant == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('กรุณาเลือกตัวเลือกสินค้า'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                          return;
-                        }
+                              // ตรวจสอบตัวเลือกสินค้า
+                              if (product.variants.isNotEmpty &&
+                                  _selectedVariant == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'กรุณาเลือกตัวเลือกสินค้า',
+                                    ),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                                return;
+                              }
 
-                        final added = widget.cartController.addToCart(
-                          product,
-                          selectedVariant: _selectedVariant,
-                        );
+                              final added =
+                                  widget.cartController.addToCart(
+                                product,
+                                selectedVariant: _selectedVariant,
+                              );
 
-                        if (!added) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('สินค้าในสต๊อกไม่เพียงพอ'),
-                            ),
-                          );
-                          return;
-                        }
+                              if (!added) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'สินค้าในสต๊อกไม่เพียงพอ',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              _selectedVariant != null
-                                  ? 'เพิ่ม ${product.name} (${_selectedVariant!.variantName}) ลงตะกร้าแล้ว'
-                                  : 'เพิ่ม ${product.name} ลงตะกร้าแล้ว',
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      },
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    _selectedVariant != null
+                                        ? 'เพิ่ม ${product.name} (${_selectedVariant!.variantName}) ลงตะกร้าแล้ว'
+                                        : 'เพิ่ม ${product.name} ลงตะกร้าแล้ว',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            },
                       icon: const Icon(Icons.add_shopping_cart),
                       label: const Text(
                         'เพิ่มลงตะกร้า',

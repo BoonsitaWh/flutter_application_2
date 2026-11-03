@@ -32,16 +32,19 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
       _loading = true;
       _error = null;
     });
+
     try {
       final order = await _supabase
           .from('orders')
           .select('id,user_id,total_amount,status,payment_status,created_at')
           .eq('id', widget.orderId)
           .single();
+
       final items = await _supabase
           .from('order_items')
           .select('quantity,unit_price,subtotal,products(name)')
           .eq('order_id', widget.orderId);
+
       final proof = await _supabase
           .from('payment_proofs')
           .select('id,image_path,status,created_at')
@@ -51,6 +54,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
           .maybeSingle();
 
       String? proofUrl;
+
       if (proof != null) {
         try {
           proofUrl = await _supabase.storage
@@ -60,7 +64,9 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
           // Keep order details available even if storage policy blocks the proof.
         }
       }
+
       if (!mounted) return;
+
       setState(() {
         _order = Map<String, dynamic>.from(order);
         _items = List<Map<String, dynamic>>.from(items);
@@ -70,6 +76,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
       });
     } catch (error) {
       if (!mounted) return;
+
       setState(() {
         _error = error.toString();
         _loading = false;
@@ -79,6 +86,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
 
   Future<void> _reviewPayment({required bool approve}) async {
     final action = approve ? 'ยืนยันว่าชำระแล้ว' : 'ปฏิเสธสลิป';
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -100,48 +108,75 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
         ],
       ),
     );
+
     if (confirmed != true) return;
 
     setState(() => _saving = true);
+
     try {
       await _supabase.rpc(
         'review_payment_for_order',
         params: {
-          'p_order_id': widget.orderId,
+          'p_order_id': int.parse(widget.orderId.toString()),
           'p_approved': approve,
         },
       );
+
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(approve ? 'ยืนยันการชำระเงินแล้ว' : 'ปฏิเสธสลิปแล้ว')),
+        SnackBar(
+          content: Text(
+            approve ? 'ยืนยันการชำระเงินแล้ว' : 'ปฏิเสธสลิปแล้ว',
+          ),
+        ),
       );
+
       await _load();
     } catch (error) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('บันทึกผลตรวจสลิปไม่สำเร็จ: $error')),
+        SnackBar(
+          content: Text('บันทึกผลตรวจสลิปไม่สำเร็จ: $error'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 
+  // เปลี่ยนสถานะผ่าน RPC เพื่อให้ฐานข้อมูลตรวจสอบสิทธิ์เจ้าของร้าน
   Future<void> _setOrderStatus(String status) async {
     setState(() => _saving = true);
+
     try {
-      await _supabase
-          .from('orders')
-          .update({'status': status})
-          .eq('id', widget.orderId);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('อัปเดตสถานะคำสั่งซื้อแล้ว')),
+      await _supabase.rpc(
+        'owner_update_order_status',
+        params: {
+          'p_order_id': int.parse(widget.orderId.toString()),
+          'p_status': status,
+        },
       );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('เปลี่ยนสถานะคำสั่งซื้อสำเร็จ'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
       await _load();
     } catch (error) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('อัปเดตสถานะไม่สำเร็จ: $error')),
+        SnackBar(
+          content: Text('เปลี่ยนสถานะไม่สำเร็จ: $error'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -155,32 +190,40 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-          ? _errorView()
-          : _orderView(),
+              ? _errorView()
+              : _orderView(),
     );
   }
 
   Widget _errorView() => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, size: 44),
-          const SizedBox(height: 12),
-          const Text('โหลดรายละเอียดคำสั่งซื้อไม่สำเร็จ'),
-          const SizedBox(height: 8),
-          Text(_error!, maxLines: 4, overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 12),
-          OutlinedButton(onPressed: _load, child: const Text('ลองอีกครั้ง')),
-        ],
-      ),
-    ),
-  );
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 44),
+              const SizedBox(height: 12),
+              const Text('โหลดรายละเอียดคำสั่งซื้อไม่สำเร็จ'),
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: _load,
+                child: const Text('ลองอีกครั้ง'),
+              ),
+            ],
+          ),
+        ),
+      );
 
   Widget _orderView() {
     final order = _order!;
-    final paymentStatus = order['payment_status']?.toString() ?? 'unpaid';
+    final paymentStatus =
+        order['payment_status']?.toString() ?? 'unpaid';
     final orderStatus = order['status']?.toString() ?? 'pending';
     final amount = (order['total_amount'] as num?)?.toDouble() ?? 0;
     final canReview = _proof?['status'] == 'pending';
@@ -208,10 +251,15 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Text('รายการสินค้า', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'รายการสินค้า',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 6),
         if (_items.isEmpty)
-          const Card(child: ListTile(title: Text('ไม่พบรายการสินค้า')))
+          const Card(
+            child: ListTile(title: Text('ไม่พบรายการสินค้า')),
+          )
         else
           ..._items.map((item) {
             final product = item['products'];
@@ -219,7 +267,9 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
                 ? product['name']?.toString() ?? 'สินค้า'
                 : 'สินค้า';
             final quantity = (item['quantity'] as num?)?.toInt() ?? 0;
-            final subtotal = (item['subtotal'] as num?)?.toDouble() ?? 0;
+            final subtotal =
+                (item['subtotal'] as num?)?.toDouble() ?? 0;
+
             return Card(
               child: ListTile(
                 title: Text(name),
@@ -229,10 +279,15 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
             );
           }),
         const SizedBox(height: 12),
-        Text('หลักฐานการชำระเงิน', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'หลักฐานการชำระเงิน',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 6),
         if (_proof == null)
-          const Card(child: ListTile(title: Text('ลูกค้ายังไม่ได้ส่งสลิป')))
+          const Card(
+            child: ListTile(title: Text('ลูกค้ายังไม่ได้ส่งสลิป')),
+          )
         else ...[
           Card(
             child: Column(
@@ -257,8 +312,12 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
                     child: Text('โหลดสลิปไม่ได้ ตรวจ Storage policy'),
                   ),
                 ListTile(
-                  title: Text('สถานะสลิป: ${_proofLabel(_proof!['status'])}'),
-                  subtitle: Text('อัปโหลดเมื่อ ${_dateLabel(_proof!['created_at'])}'),
+                  title: Text(
+                    'สถานะสลิป: ${_proofLabel(_proof!['status'])}',
+                  ),
+                  subtitle: Text(
+                    'อัปโหลดเมื่อ ${_dateLabel(_proof!['created_at'])}',
+                  ),
                 ),
               ],
             ),
@@ -269,7 +328,9 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _saving ? null : () => _reviewPayment(approve: false),
+                    onPressed: _saving
+                        ? null
+                        : () => _reviewPayment(approve: false),
                     icon: const Icon(Icons.close, color: Colors.red),
                     label: const Text('ปฏิเสธสลิป'),
                   ),
@@ -277,7 +338,9 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: _saving ? null : () => _reviewPayment(approve: true),
+                    onPressed: _saving
+                        ? null
+                        : () => _reviewPayment(approve: true),
                     icon: const Icon(Icons.check),
                     label: const Text('ยืนยันชำระแล้ว'),
                   ),
@@ -287,7 +350,10 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
           ],
         ],
         const SizedBox(height: 20),
-        Text('อัปเดตสถานะออเดอร์', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'อัปเดตสถานะออเดอร์',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -305,39 +371,40 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
   }
 
   Widget _statusButton(String value, String label) => OutlinedButton(
-    onPressed: _saving || _order?['status'] == value
-        ? null
-        : () => _setOrderStatus(value),
-    child: Text(label),
-  );
+        onPressed: _saving || _order?['status'] == value
+            ? null
+            : () => _setOrderStatus(value),
+        child: Text(label),
+      );
 
   String _dateLabel(Object? value) {
     final date = DateTime.tryParse(value?.toString() ?? '')?.toLocal();
     if (date == null) return 'ไม่ทราบวันที่';
+
     return '${date.day}/${date.month}/${date.year} '
         '${date.hour.toString().padLeft(2, '0')}:'
         '${date.minute.toString().padLeft(2, '0')}';
   }
 
   String _paymentLabel(String status) => switch (status) {
-    'pending' => 'รอตรวจสอบ',
-    'paid' => 'ชำระแล้ว',
-    'unpaid' => 'ยังไม่ชำระ',
-    _ => status,
-  };
+        'pending' => 'รอตรวจสอบ',
+        'paid' => 'ชำระแล้ว',
+        'unpaid' => 'ยังไม่ชำระ',
+        _ => status,
+      };
 
   String _proofLabel(Object? status) => switch (status?.toString()) {
-    'pending' => 'รอตรวจสอบ',
-    'approved' => 'อนุมัติแล้ว',
-    'rejected' => 'ปฏิเสธ',
-    _ => status?.toString() ?? 'ไม่ทราบสถานะ',
-  };
+        'pending' => 'รอตรวจสอบ',
+        'approved' => 'อนุมัติแล้ว',
+        'rejected' => 'ปฏิเสธ',
+        _ => status?.toString() ?? 'ไม่ทราบสถานะ',
+      };
 
   String _orderStatusLabel(String status) => switch (status) {
-    'pending' => 'รอดำเนินการ',
-    'confirmed' => 'ยืนยันแล้ว',
-    'completed' => 'เสร็จสิ้น',
-    'cancelled' => 'ยกเลิก',
-    _ => status,
-  };
+        'pending' => 'รอดำเนินการ',
+        'confirmed' => 'ยืนยันแล้ว',
+        'completed' => 'เสร็จสิ้น',
+        'cancelled' => 'ยกเลิก',
+        _ => status,
+      };
 }

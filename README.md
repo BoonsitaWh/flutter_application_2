@@ -1,5 +1,7 @@
 # Wongherm Bakery
 
+แอปพรีออเดอร์ขนมโฮมเมด/เบเกอรี่ เปรียบเทียบข้อกำหนดและช่องว่างล่าสุดได้ที่ [docs/BAKERY_REQUIREMENTS_REVIEW.md](docs/BAKERY_REQUIREMENTS_REVIEW.md)
+
 แอป Android สำหรับสั่งซื้อเบเกอรี่ สร้างด้วย Flutter และ Supabase รองรับบัญชีลูกค้า/เจ้าของร้าน รายการสินค้า ตะกร้า การสั่งซื้อ หลักฐานชำระเงิน ประวัติคำสั่งซื้อ การแจ้งเตือนในแอป และแชทเรียลไทม์ระหว่างลูกค้ากับแอดมิน
 
 ## ฟีเจอร์และสถานะ Week 2–6
@@ -9,11 +11,14 @@
 - **Week 4 — Integrations (14 ต.ค. 2569):** แชทเรียลไทม์ลูกค้า↔แอดมิน, แจ้งเตือนในแอปจาก Supabase, อัปโหลดรูปสินค้าไป Supabase Storage, กรองตามหมวดหมู่ และค้นหาจากชื่อ/รายละเอียดสินค้า
 - **Week 5 — Polish & Test (21 ต.ค. 2569):** เพิ่มป้ายกำกับสำหรับช่องค้นหาและปุ่มที่ใช้ไอคอน, เพิ่ม contrast ของปุ่มหลัก, ขยาย tap target ปุ่มเพิ่มสินค้า, ซ่อนการจัดการสินค้าในหน้าลูกค้า, ตรวจราคา non-finite และมี automated tests 18 เคส
 - **เพิ่มเติม:** เพิ่มช่องจัดการจำนวนสต๊อกและแสดงจำนวนคงเหลือในหน้าร้าน; ต้อง apply migration [`supabase/migrations/20261029_product_stock.sql`](supabase/migrations/20261029_product_stock.sql) ก่อน
+- **เพิ่มเติม:** เพิ่มหน้าเจ้าของร้านสำหรับดู/กรองออเดอร์ ตรวจสลิป อนุมัติ/ปฏิเสธการชำระ และอัปเดตสถานะจัดเตรียม; การตรวจสลิปต้อง apply [`supabase/migrations/20261104_owner_order_review.sql`](supabase/migrations/20261104_owner_order_review.sql) และตั้ง RLS/Storage policies ให้ครบ
 - **Week 6 — Final Delivery (ภายใน 4 พ.ย. 2569):** Android APK สำหรับทดสอบสร้างแล้วที่ `build/app/outputs/flutter-apk/app-release.apk`; มีลิงก์ GitHub และสคริปต์เดโมด้านล่าง
 
 > แชทและแจ้งเตือนในแอปใช้ Supabase Realtime; ยังไม่มี push notification
 
 ก่อนใช้แชท ให้รัน migration [`supabase/migrations/20261020_chat.sql`](supabase/migrations/20261020_chat.sql) ใน Supabase SQL Editor ด้วยบัญชีเจ้าของโปรเจกต์ แล้วตรวจว่าตาราง `user_roles` มี role `owner` ให้บัญชีแอดมินและเปิด Realtime สำหรับสองตารางแล้ว
+
+ก่อนใช้หน้าตรวจสลิป ให้รัน migration `supabase/migrations/20261104_owner_order_review.sql` และตั้ง policy ให้เจ้าของร้านอ่าน `orders`, `order_items`, `payment_proofs` และอ่านไฟล์ใน private bucket `payment-proofs` ได้ การเพิ่ม migration ใน repository ไม่ได้ apply ไปยัง Supabase project โดยอัตโนมัติ
 
 ## เริ่มต้นใช้งาน
 
@@ -67,6 +72,6 @@ flutter test
 - แชทใช้ได้เมื่อ deploy migration และ RLS/Realtime ฝั่ง Supabase แล้ว; ไม่มี push notification
 - SQLite cache รองรับอ่าน catalog ล่าสุดตอนออฟไลน์; การเปลี่ยนสินค้าแบบ offline ยังไม่มี write queue และยังต้องบันทึกกับ Supabase ก่อน
 - สต๊อกยังเป็นจำนวนที่เจ้าของร้านกรอกเอง; checkout ยังไม่ reserve/decrement แบบ transaction จึงไม่ควรใช้ยืนยันสต๊อกเมื่อมีคำสั่งซื้อพร้อมกัน
-- ยังไม่มีคูปอง/ส่วนลด, payment gateway/ยืนยันยอดอัตโนมัติ, การจัดการออเดอร์จาก dashboard, หรือการส่งรูปในแชท; รายละเอียดอยู่ใน [docs/DATA_MODEL.md](docs/DATA_MODEL.md)
+- ยังไม่มีคูปอง/ส่วนลด, payment gateway/ยืนยันยอดอัตโนมัติ, สรุปยอดขายใน dashboard, หรือการส่งรูปในแชท; รายละเอียดอยู่ใน [docs/BAKERY_REQUIREMENTS_REVIEW.md](docs/BAKERY_REQUIREMENTS_REVIEW.md)
 - การสั่งซื้อ/แจ้งเตือน/อัปโหลดหลักฐานต้องพึ่ง Supabase schema, RLS และ Storage policies ที่ถูกต้อง
 - APK ผ่านการ build และตรวจ APK signature/package metadata แล้ว แต่ยังไม่ได้ติดตั้งทดสอบบนอุปกรณ์จริง

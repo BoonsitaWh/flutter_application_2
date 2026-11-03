@@ -8,6 +8,7 @@ import 'features/auth/views/login_screen.dart';
 import 'features/auth/views/reset_password_screen.dart';
 import 'features/product/views/product_list_screen.dart';
 import 'features/chat/views/admin_chat_inbox_screen.dart';
+import 'features/admin/views/owner_orders_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -291,6 +292,22 @@ class OwnerDashboardScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(email),
               const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.receipt_long),
+                  label: const Text('คำสั่งซื้อและตรวจสลิป'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OwnerOrdersScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(

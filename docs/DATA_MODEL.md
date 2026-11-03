@@ -20,7 +20,7 @@ auth.users ──1:N── chat_conversations ──1:N── chat_messages
 | `user_roles` | `user_id`, `role` | One role per auth user; `customer` or `owner` |
 | `products` | `id`, `name`, `description`, `base_price`, `category`, `image_urls`, `stock_quantity`, `is_active`, `created_at` | Public catalog; owner create/update; soft-delete via `is_active=false` |
 | `product_variants` | `id`, `product_id`, `variant_name`, `additional_price` | Options belonging to one product |
-| `orders` | `id`, `user_id`, `total_amount`, `status`, `payment_status`, `created_at` | Customer order; owner order-review UI is future work |
+| `orders` | `id`, `user_id`, `total_amount`, `status`, `payment_status`, `created_at` | Customer order; owner can review and update status |
 | `order_items` | `id`, `order_id`, `product_id`, `quantity`, `unit_price`, `subtotal` | Immutable purchase snapshot for an order |
 | `payment_proofs` | `id`, `order_id`, `user_id`, `image_path`, `status`, `created_at` | Uploaded payment evidence and review status |
 | `notifications` | `id`, `user_id`, `title`, `message`, `is_read`, `created_at` | In-app messages; only the owner of the row marks it read |
@@ -64,8 +64,12 @@ Apply [`../supabase/migrations/20261029_product_stock.sql`](../supabase/migratio
 - Coupons/discounts are not implemented. Add coupon validation and price calculation on the server before showing a discounted checkout total.
 - Payment uses customer-uploaded proof with a pending review state. It is not an automatic payment gateway or verified payment confirmation.
 - Product variants are currently free-form labels with an optional additional price in the data model; the create form currently stores labels with zero additional price. Structured color/size combinations and per-variant inventory remain future work.
-- The owner dashboard currently links to catalog and chat, but does not provide order/payment review metrics or fulfillment controls.
+- The owner dashboard includes order/payment review and fulfillment status controls; sales summary metrics are not implemented yet.
 - Chat currently supports text messages only; image upload is not implemented.
+
+## Owner order review
+
+The app now includes an owner order list/detail screen for filtering orders, viewing items, reviewing a private payment-proof image, and updating fulfillment status. Before using the payment approval/rejection action, apply [`../supabase/migrations/20261104_owner_order_review.sql`](../supabase/migrations/20261104_owner_order_review.sql). The RPC checks the caller's `owner` role and updates proof/payment states in one transaction. The deployed database still needs RLS policies that let owners read orders, order items, and proofs, plus a Storage read policy for the private `payment-proofs` bucket. This migration has not been applied to the live Supabase project.
 
 The SQLite cache currently supports offline catalog reads. It is **not** an offline write queue: create/update/delete still require Supabase and the local cache is updated after a successful cloud mutation. This limitation should be stated in the Week 3 presentation if the rubric expects offline write synchronization.
 

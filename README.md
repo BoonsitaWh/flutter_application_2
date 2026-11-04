@@ -9,7 +9,7 @@
 - **Week 2 — UX/UI (30 ก.ย. 2569):** บรีฟปัญหา/ผู้ใช้ โฟลว์หลัก และ wireframe 5 หน้าจออยู่ใน [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md); โครงสร้างโปรเจกต์และธีมอยู่ใน `lib/`
 - **Week 3 — Data & Sync (7 ต.ค. 2569):** Auth, CRUD สินค้า, schema/data model และ SQLite cache สำหรับอ่าน catalog ตอนออฟไลน์; รายละเอียด schema อยู่ใน [docs/DATA_MODEL.md](docs/DATA_MODEL.md)
 - **Week 4 — Integrations (14 ต.ค. 2569):** แชทเรียลไทม์ลูกค้า↔แอดมิน, แจ้งเตือนในแอปจาก Supabase, อัปโหลดรูปสินค้าไป Supabase Storage, กรองตามหมวดหมู่ และค้นหาจากชื่อ/รายละเอียดสินค้า
-- **Week 5 — Polish & Test (21 ต.ค. 2569):** เพิ่มป้ายกำกับสำหรับช่องค้นหาและปุ่มที่ใช้ไอคอน, เพิ่ม contrast ของปุ่มหลัก, ขยาย tap target ปุ่มเพิ่มสินค้า, ซ่อนการจัดการสินค้าในหน้าลูกค้า, ตรวจราคา non-finite และมี automated tests 18 เคส
+- **Week 5 — Polish & Test (21 ต.ค. 2569):** เพิ่มป้ายกำกับสำหรับช่องค้นหาและปุ่มที่ใช้ไอคอน, เพิ่ม contrast ของปุ่มหลัก, ขยาย tap target ปุ่มเพิ่มสินค้า, ซ่อนการจัดการสินค้าในหน้าลูกค้า, ตรวจราคา non-finite และมี automated tests 20 เคส
 - **เพิ่มเติม:** เพิ่มช่องจัดการจำนวนสต๊อกและแสดงจำนวนคงเหลือในหน้าร้าน; ต้อง apply migration [`supabase/migrations/20261029_product_stock.sql`](supabase/migrations/20261029_product_stock.sql) ก่อน
 - **เพิ่มเติม:** เพิ่มหน้าเจ้าของร้านสำหรับดู/กรองออเดอร์ ตรวจสลิป อนุมัติ/ปฏิเสธการชำระ และอัปเดตสถานะจัดเตรียม; การตรวจสลิปต้อง apply [`supabase/migrations/20261104_owner_order_review.sql`](supabase/migrations/20261104_owner_order_review.sql) และตั้ง RLS/Storage policies ให้ครบ
 - **Week 6 — Final Delivery (ภายใน 4 พ.ย. 2569):** Android APK สำหรับทดสอบสร้างแล้วที่ `build/app/outputs/flutter-apk/app-release.apk`; มีลิงก์ GitHub และสคริปต์เดโมด้านล่าง
@@ -21,6 +21,8 @@
 ก่อนใช้หน้าตรวจสลิป ให้รัน migration `supabase/migrations/20261104_owner_order_review.sql` และตั้ง policy ให้เจ้าของร้านอ่าน `orders`, `order_items`, `payment_proofs` และอ่านไฟล์ใน private bucket `payment-proofs` ได้ การเพิ่ม migration ใน repository ไม่ได้ apply ไปยัง Supabase project โดยอัตโนมัติ
 
 ก่อนยืนยันคำสั่งซื้อ ให้รัน migration `supabase/migrations/20261104_create_order_with_stock.sql` หลังจากสร้างตารางหลักแล้ว เพื่อเพิ่ม RPC ที่ checkout เรียกใช้และตัดสต๊อกแบบ transaction
+
+ก่อนใช้การแจ้งเตือนออเดอร์ ให้รัน migration `supabase/migrations/20261104_order_notifications.sql` หลังจากสร้าง `notifications`, `user_roles`, `orders` และ `payment_proofs` แล้ว ตรวจ RLS ให้ผู้ใช้เห็นเฉพาะ notification ของตน และเปิด Realtime สำหรับตาราง `notifications`
 
 ## เริ่มต้นใช้งาน
 

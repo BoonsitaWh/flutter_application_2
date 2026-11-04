@@ -61,6 +61,8 @@ Apply [`../supabase/migrations/20261029_product_stock.sql`](../supabase/migratio
 
 The checkout screen calls the `create_order_with_stock(jsonb)` RPC. Apply [`../supabase/migrations/20261104_create_order_with_stock.sql`](../supabase/migrations/20261104_create_order_with_stock.sql) in Supabase SQL Editor after the base `products`, `product_variants`, `orders`, and `order_items` tables exist. It recalculates totals from cloud prices, locks/checks stock, creates order rows, and decrements inventory in one transaction. The RPC is restricted to authenticated users. This migration has not been applied to the live Supabase project.
 
+The notification screen subscribes to the signed-in user's notification rows. Apply [`../supabase/migrations/20261104_order_notifications.sql`](../supabase/migrations/20261104_order_notifications.sql) after the base `notifications`, `user_roles`, `orders`, and `payment_proofs` tables exist. It inserts in-app notifications on order creation, slip upload, and order/payment status changes, and adds `notifications` to Realtime. Confirm RLS allows each user to select/update only their own rows. Push delivery still requires a separate provider and device-token setup.
+
 ## Remaining product requirements
 
 - Coupons/discounts are not implemented. Add coupon validation and price calculation on the server before showing a discounted checkout total.

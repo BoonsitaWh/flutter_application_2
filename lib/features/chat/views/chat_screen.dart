@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
+import '../utils/chat_message_order.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -76,7 +77,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final messages = snapshot.data!;
+                final messages = ChatMessageOrder.chronological(
+                  snapshot.data!,
+                );
                 if (messages.isEmpty) {
                   return const _ChatMessageState(
                     icon: Icons.chat_bubble_outline,

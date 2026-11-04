@@ -2,7 +2,7 @@
 
 ## Automated tests
 
-ไฟล์ `test/cart_controller_test.dart` ครอบคลุม unit test ตะกร้า 12 กรณี และ `test/product_cache_test.dart` เพิ่ม SQLite cache 6 กรณี รวม **18 automated tests**:
+ไฟล์ `test/cart_controller_test.dart` ครอบคลุม unit test ตะกร้า 12 กรณี, `test/product_cache_test.dart` ครอบคลุม SQLite cache 6 กรณี และ `test/chat_message_order_test.dart` ตรวจลำดับข้อความ 2 กรณี รวม **20 automated tests**:
 
 | # | กรณี | ผลที่คาดหวัง |
 |---|---|---|
@@ -30,7 +30,14 @@ SQLite cache cases:
 | 17 | soft-delete สินค้า | สินค้า inactive ไม่แสดงใน catalog cache |
 | 18 | ข้อมูลไม่มี id | ข้ามข้อมูลที่ไม่สามารถระบุ key ได้ |
 
-รันด้วย `flutter test`; ล่าสุดผ่านครบ 18/18 เคส
+Chat order cases:
+
+| # | กรณี | ผลที่คาดหวัง |
+|---|---|---|
+| 19 | ข้อความจาก stream ที่เรียงใหม่ไปเก่าถูกจัดตามเวลา | ข้อความเก่าแสดงก่อนข้อความใหม่ |
+| 20 | ข้อความที่มีเวลาเท่ากัน | ใช้ id เป็นตัวเรียงเพื่อให้ลำดับคงที่ |
+
+รันด้วย `flutter test`; ล่าสุดผ่านครบ 20/20 เคส
 
 ## Manual acceptance cases (backend/device)
 
@@ -54,6 +61,8 @@ SQLite cache cases:
 18. เจ้าของร้านตรวจสลิปแล้วอนุมัติ/ปฏิเสธ สถานะ `payment_proofs` และ `orders.payment_status` ต้องเปลี่ยนพร้อมกันผ่าน RPC
 19. เจ้าของร้านอัปเดตสถานะออเดอร์เป็นยืนยันแล้ว/เสร็จสิ้น และลูกค้าเห็นสถานะใหม่ในประวัติการสั่งซื้อ
 20. ลูกค้าทั่วไปต้องไม่มีสิทธิ์เรียก RPC ตรวจสลิปหรือแก้สถานะออเดอร์ของบัญชีอื่น (ตรวจ RLS/สิทธิ์ function บน Supabase)
+21. สร้างออเดอร์แล้วลูกค้าและร้านได้รับ in-app notification; อัปโหลดสลิปและเปลี่ยนสถานะแล้วแจ้งเตือนผู้เกี่ยวข้อง
+22. เปิดหน้าแจ้งเตือนค้างไว้แล้วมี notification ใหม่ รายการอัปเดตแบบ realtime; แตะอ่านแล้วสถานะอ่านแล้วเปลี่ยน
 
 ## Bug log
 
@@ -75,6 +84,7 @@ SQLite cache cases:
 - [ ] ทดสอบ layout มือถือจอเล็ก/แท็บเล็ต และ error/loading/empty states กับ backend จริง
 - [ ] ทดสอบ offline write queue: ยังไม่มี; การเพิ่ม/แก้ไข/ลบสินค้ายังคงต้องสำเร็จบน Supabase ก่อน
 - [ ] Apply `supabase/migrations/20261020_chat.sql` และทดสอบ flow แชท/RLS บน Supabase จริง
+- [ ] Apply `supabase/migrations/20261104_order_notifications.sql` และทดสอบ notification trigger/RLS/Realtime บน Supabase จริง
 
 ## Android build verification
 

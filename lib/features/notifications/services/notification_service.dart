@@ -3,6 +3,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class NotificationService {
   final SupabaseClient _client = Supabase.instance.client;
 
+  Stream<List<Map<String, dynamic>>> watchNotifications() {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('กรุณาเข้าสู่ระบบก่อน');
+
+    return _client
+        .from('notifications')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', user.id)
+        .order('created_at', ascending: false);
+  }
+
   // โหลดการแจ้งเตือนของผู้ใช้ที่ล็อกอินอยู่
   Future<List<Map<String, dynamic>>> getNotifications() async {
     final user = _client.auth.currentUser;

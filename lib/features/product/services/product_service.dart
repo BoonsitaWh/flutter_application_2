@@ -97,12 +97,8 @@ class ProductService {
     List<String> imageUrls = const [],
   }) async {
     // ตรวจสอบบัญชีที่กำลังเข้าสู่ระบบ
-    debugPrint(
-      'CURRENT USER ID: ${_supabase.auth.currentUser?.id}',
-    );
-    debugPrint(
-      'CURRENT USER EMAIL: ${_supabase.auth.currentUser?.email}',
-    );
+    debugPrint('CURRENT USER ID: ${_supabase.auth.currentUser?.id}');
+    debugPrint('CURRENT USER EMAIL: ${_supabase.auth.currentUser?.email}');
 
     final productData = await _supabase
         .from('products')
@@ -161,6 +157,7 @@ class ProductService {
     required double basePrice,
     required String category,
     required int stockQuantity,
+    required List<String> imageUrls,
   }) async {
     await _supabase
         .from('products')
@@ -170,6 +167,7 @@ class ProductService {
           'base_price': basePrice,
           'category': category,
           'stock_quantity': stockQuantity,
+          'image_urls': imageUrls,
         })
         .eq('id', productId);
 
@@ -180,6 +178,7 @@ class ProductService {
         'base_price': basePrice,
         'category': category,
         'stock_quantity': stockQuantity,
+        'image_urls': imageUrls,
       }),
     );
   }

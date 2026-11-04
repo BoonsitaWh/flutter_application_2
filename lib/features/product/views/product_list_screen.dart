@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/product_service.dart';
 import '../models/product_model.dart';
 import '../../admin/views/add_product_screen.dart';
@@ -81,6 +84,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
   // แก้ไขสินค้า
   // =========================
   Future<void> _showEditProductDialog(Product product) async {
+    final picker = ImagePicker();
+    final keptImageUrls = List<String>.from(product.imageUrls);
+    final selectedImages = <XFile>[];
+    final selectedImageBytes = <Uint8List>[];
     final nameController = TextEditingController(text: product.name);
 
     final descriptionController = TextEditingController(
@@ -97,6 +104,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     String selectedCategory = _categories.contains(product.category)
         ? product.category
         : 'เค้ก';
+    bool isSaving = false;
 
     await showDialog(
       context: context,
@@ -109,6 +117,82 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'รูปสินค้า',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 88,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          for (
+                            var index = 0;
+                            index < keptImageUrls.length;
+                            index++
+                          )
+                            _EditProductImageTile(
+                              image: Image.network(
+                                keptImageUrls[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image_outlined),
+                              ),
+                              onRemove: () => setDialogState(
+                                () => keptImageUrls.removeAt(index),
+                              ),
+                            ),
+                          for (
+                            var index = 0;
+                            index < selectedImageBytes.length;
+                            index++
+                          )
+                            _EditProductImageTile(
+                              image: Image.memory(
+                                selectedImageBytes[index],
+                                fit: BoxFit.cover,
+                              ),
+                              onRemove: () => setDialogState(() {
+                                selectedImageBytes.removeAt(index);
+                                selectedImages.removeAt(index);
+                              }),
+                            ),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              try {
+                                final picked = await picker.pickMultiImage();
+                                if (picked.isEmpty) return;
+                                final bytes = <Uint8List>[];
+                                for (final file in picked) {
+                                  bytes.add(await file.readAsBytes());
+                                }
+                                if (!context.mounted) return;
+                                setDialogState(() {
+                                  selectedImages.addAll(picked);
+                                  selectedImageBytes.addAll(bytes);
+                                });
+                              } catch (error) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('เลือกรูปไม่สำเร็จ: $error'),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.add_photo_alternate_outlined,
+                            ),
+                            label: const Text('เพิ่มรูป'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     TextField(
                       controller: nameController,
                       decoration: const InputDecoration(
@@ -182,78 +266,111 @@ class _ProductListScreenState extends State<ProductListScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                  },
+                  onPressed: isSaving
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
                   child: const Text('ยกเลิก'),
                 ),
 
                 ElevatedButton(
-                  onPressed: () async {
-                    if (nameController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('กรุณากรอกชื่อสินค้า'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          if (nameController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('กรุณากรอกชื่อสินค้า'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
 
-                    final price = double.tryParse(priceController.text.trim());
-                    final stockQuantity = int.tryParse(stockController.text.trim());
+                          final price = double.tryParse(
+                            priceController.text.trim(),
+                          );
+                          final stockQuantity = int.tryParse(
+                            stockController.text.trim(),
+                          );
 
-                    if (price == null || !price.isFinite || price < 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('กรุณากรอกราคาให้ถูกต้อง'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
+                          if (price == null || !price.isFinite || price < 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('กรุณากรอกราคาให้ถูกต้อง'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
 
-                    if (stockQuantity == null || stockQuantity < 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('กรุณากรอกสต๊อกเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป')),
-                      );
-                      return;
-                    }
+                          if (stockQuantity == null || stockQuantity < 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'กรุณากรอกสต๊อกเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
 
-                    try {
-                      await _productService.updateProduct(
-                        productId: product.id,
-                        name: nameController.text.trim(),
-                        description: descriptionController.text.trim(),
-                        basePrice: price,
-                        category: selectedCategory,
-                        stockQuantity: stockQuantity,
-                      );
+                          setDialogState(() => isSaving = true);
+                          try {
+                            final uploadedImageUrls = await _productService
+                                .uploadProductImages(
+                                  List.generate(
+                                    selectedImages.length,
+                                    (index) => (
+                                      name: selectedImages[index].name,
+                                      bytes: selectedImageBytes[index],
+                                    ),
+                                  ),
+                                );
+                            await _productService.updateProduct(
+                              productId: product.id,
+                              name: nameController.text.trim(),
+                              description: descriptionController.text.trim(),
+                              basePrice: price,
+                              category: selectedCategory,
+                              stockQuantity: stockQuantity,
+                              imageUrls: [
+                                ...keptImageUrls,
+                                ...uploadedImageUrls,
+                              ],
+                            );
 
-                      if (dialogContext.mounted) {
-                        Navigator.pop(dialogContext);
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
 
-                        ScaffoldMessenger.of(dialogContext).showSnackBar(
-                          const SnackBar(
-                            content: Text('แก้ไขสินค้าสำเร็จ'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                const SnackBar(
+                                  content: Text('แก้ไขสินค้าสำเร็จ'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
 
-                        await _loadProducts();
-                      }
-                    } catch (e) {
-                      if (dialogContext.mounted) {
-                        ScaffoldMessenger.of(dialogContext).showSnackBar(
-                          SnackBar(
-                            content: Text('แก้ไขสินค้าไม่สำเร็จ: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  child: const Text('บันทึก'),
+                              await _loadProducts();
+                            }
+                          } catch (e) {
+                            if (dialogContext.mounted) {
+                              setDialogState(() => isSaving = false);
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                SnackBar(
+                                  content: Text('แก้ไขสินค้าไม่สำเร็จ: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSaving
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('บันทึก'),
                 ),
               ],
             );
@@ -665,7 +782,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                   ),
                                 ),
 
-                                
                                 // =========================
                                 // ข้อมูลสินค้า
                                 // =========================
@@ -706,15 +822,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                         p.stockQuantity == null
                                             ? 'ยังไม่ได้ระบุจำนวนสต๊อก'
                                             : p.stockQuantity! > 0
-                                                ? 'คงเหลือ ${p.stockQuantity} ชิ้น'
-                                                : 'สินค้าหมด',
+                                            ? 'คงเหลือ ${p.stockQuantity} ชิ้น'
+                                            : 'สินค้าหมด',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: p.stockQuantity == null
                                               ? Colors.grey
                                               : p.stockQuantity! > 0
-                                                  ? Colors.green.shade700
-                                                  : Colors.red,
+                                              ? Colors.green.shade700
+                                              : Colors.red,
                                         ),
                                       ),
 
@@ -734,51 +850,52 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                         Align(
                                           alignment: Alignment.centerRight,
                                           child: IconButton(
-                                          padding: EdgeInsets.zero,
-                                          constraints:
-                                              const BoxConstraints.tightFor(
-                                                width: 44,
-                                                height: 44,
-                                              ),
-                                          icon: const Icon(
-                                            Icons.add_shopping_cart,
-                                          ),
-                                          tooltip: 'เพิ่มลงตะกร้า',
-                                          onPressed:
-                                              p.stockQuantity != null &&
-                                                  p.stockQuantity! <= 0
-                                              ? null
-                                              : () {
-                                                  final added =
-                                                      _cartController.addToCart(p);
+                                            padding: EdgeInsets.zero,
+                                            constraints:
+                                                const BoxConstraints.tightFor(
+                                                  width: 44,
+                                                  height: 44,
+                                                ),
+                                            icon: const Icon(
+                                              Icons.add_shopping_cart,
+                                            ),
+                                            tooltip: 'เพิ่มลงตะกร้า',
+                                            onPressed:
+                                                p.stockQuantity != null &&
+                                                    p.stockQuantity! <= 0
+                                                ? null
+                                                : () {
+                                                    final added =
+                                                        _cartController
+                                                            .addToCart(p);
 
-                                                  if (!added) {
+                                                    if (!added) {
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                            'สินค้าในสต๊อกไม่เพียงพอ',
+                                                          ),
+                                                        ),
+                                                      );
+                                                      return;
+                                                    }
+
                                                     ScaffoldMessenger.of(
                                                       context,
                                                     ).showSnackBar(
-                                                      const SnackBar(
+                                                      SnackBar(
                                                         content: Text(
-                                                          'สินค้าในสต๊อกไม่เพียงพอ',
+                                                          'เพิ่ม ${p.name} ลงตะกร้าแล้ว',
                                                         ),
+                                                        duration:
+                                                            const Duration(
+                                                              seconds: 1,
+                                                            ),
                                                       ),
                                                     );
-                                                    return;
-                                                  }
-
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(
-                                                        'เพิ่ม ${p.name} ลงตะกร้าแล้ว',
-                                                      ),
-                                                      duration:
-                                                          const Duration(
-                                                            seconds: 1,
-                                                          ),
-                                                    ),
-                                                  );
-                                                },
+                                                  },
                                           ),
                                         ),
                                     ],
@@ -831,4 +948,38 @@ class _ProductListScreenState extends State<ProductListScreen> {
           (product.description?.toLowerCase().contains(query) ?? false);
     }).toList();
   }
+}
+
+class _EditProductImageTile extends StatelessWidget {
+  final Widget image;
+  final VoidCallback onRemove;
+
+  const _EditProductImageTile({required this.image, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(right: 8),
+    child: SizedBox(
+      width: 84,
+      height: 84,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(borderRadius: BorderRadius.circular(8), child: image),
+          Positioned(
+            top: 2,
+            right: 2,
+            child: IconButton.filledTonal(
+              onPressed: onRemove,
+              tooltip: 'เอารูปออก',
+              visualDensity: VisualDensity.compact,
+              iconSize: 16,
+              constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+              icon: const Icon(Icons.close),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

@@ -198,7 +198,7 @@ class _RoleGateState extends State<RoleGate> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const Icon(Icons.error_outline, size: 48, color: Color.fromARGB(255, 245, 51, 51)),
                 const SizedBox(height: 12),
                 const Text('ตรวจสอบสิทธิ์ผู้ใช้ไม่สำเร็จ'),
                 const SizedBox(height: 8),

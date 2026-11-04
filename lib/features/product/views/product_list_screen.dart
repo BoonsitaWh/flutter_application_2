@@ -705,7 +705,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                 Expanded(
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.orange.shade50,
+                                      color: const Color.fromARGB(255, 223, 228, 223),
                                       borderRadius: const BorderRadius.vertical(
                                         top: Radius.circular(16),
                                       ),

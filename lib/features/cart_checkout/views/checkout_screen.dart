@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../controllers/cart_controller.dart';
@@ -21,46 +20,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final SupabaseClient _supabase = Supabase.instance.client;
 
   bool _isLoading = false;
-
-  // ตรวจสอบข้อมูลตะกร้าโดยไม่สร้างคำสั่งซื้อ
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _debugCartPayload();
-    });
-  }
-
-  void _debugCartPayload() {
-    final cartItems = widget.cartController.items;
-    final user = _supabase.auth.currentUser;
-
-    debugPrint('========== CART CHECK START ==========');
-    debugPrint('USER ID: ${user?.id}');
-    debugPrint('CART ITEM COUNT: ${cartItems.length}');
-
-    for (final item in cartItems) {
-      final productId = int.tryParse(item.product.id);
-      final variantId = item.selectedVariant == null
-          ? null
-          : int.tryParse(item.selectedVariant!.id);
-
-      debugPrint('PRODUCT NAME: ${item.product.name}');
-      debugPrint('PRODUCT ID: $productId');
-      debugPrint(
-        'VARIANT NAME: ${item.selectedVariant?.variantName ?? "ไม่มี"}',
-      );
-      debugPrint('VARIANT ID: $variantId');
-      debugPrint('QUANTITY: ${item.quantity}');
-      debugPrint(
-        'PAYLOAD: {product_id: $productId, variant_id: $variantId, quantity: ${item.quantity}}',
-      );
-      debugPrint('------------------------------');
-    }
-
-    debugPrint('========== CART CHECK END ==========');
-  }
 
   Future<void> _createOrder() async {
     final cart = widget.cartController;
@@ -97,10 +56,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final cartItems = List.of(cart.items);
       final List<Map<String, dynamic>> itemsPayload = [];
 
-      debugPrint('========== ORDER DEBUG START ==========');
-      debugPrint('USER ID: ${user.id}');
-      debugPrint('CART ITEM COUNT: ${cartItems.length}');
-
       for (final item in cartItems) {
         final int? productId = int.tryParse(item.product.id);
 
@@ -127,24 +82,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'quantity': item.quantity,
         });
 
-        debugPrint('PRODUCT NAME: ${item.product.name}');
-        debugPrint('PRODUCT ID: $productId');
-        debugPrint(
-          'VARIANT NAME: ${item.selectedVariant?.variantName ?? "ไม่มี"}',
-        );
-        debugPrint('VARIANT ID: $variantId');
-        debugPrint('QUANTITY: ${item.quantity}');
-        debugPrint('ORDER ITEM PAYLOAD: ${itemsPayload.last}');
       }
-
-      debugPrint('FINAL ITEMS PAYLOAD: $itemsPayload');
 
       final double fallbackTotal = cartItems.fold<double>(
         0,
         (total, item) => total + item.totalPrice,
       );
-
-      debugPrint('FALLBACK TOTAL: $fallbackTotal');
 
       // เรียก Supabase เพื่อสร้างคำสั่งซื้อจริง
       final dynamic response = await _supabase.rpc(
@@ -153,9 +96,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'p_items': itemsPayload,
         },
       );
-
-      debugPrint('SUPABASE ORDER RESPONSE: $response');
-      debugPrint('========== ORDER DEBUG END ==========');
 
       final int orderId = response is int
           ? response
@@ -180,8 +120,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             .single();
 
         orderTotal = (orderData['total_amount'] as num).toDouble();
-      } catch (e) {
-        debugPrint('อ่านยอดคำสั่งซื้อไม่สำเร็จ: $e');
+      } catch (_) {
+        // Keep the local total if the follow-up read is unavailable.
       }
 
       if (!mounted) return;
@@ -218,17 +158,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
       );
-    } catch (e, stackTrace) {
-      debugPrint('========== ORDER ERROR ==========');
-      debugPrint('ERROR: $e');
-      debugPrint('STACK TRACE: $stackTrace');
-      debugPrint('=================================');
-
+    } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('สร้างคำสั่งซื้อไม่สำเร็จ: $e'),
+          content: Text(_checkoutErrorMessage(e)),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 5),
         ),
@@ -240,6 +175,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         });
       }
     }
+  }
+
+  String _checkoutErrorMessage(Object error) {
+    if (error is PostgrestException &&
+        (error.code == 'PGRST202' ||
+            error.message.contains('create_order_with_stock'))) {
+      return 'ระบบสั่งซื้อยังตั้งค่าไม่ครบ กรุณาติดต่อร้านค้า';
+    }
+    return 'สร้างคำสั่งซื้อไม่สำเร็จ: $error';
   }
 
   @override

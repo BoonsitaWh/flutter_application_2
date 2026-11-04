@@ -21,7 +21,7 @@ auth.users ──1:N── chat_conversations ──1:N── chat_messages
 | `products` | `id`, `name`, `description`, `base_price`, `category`, `image_urls`, `stock_quantity`, `is_active`, `created_at` | Public catalog; owner create/update; soft-delete via `is_active=false` |
 | `product_variants` | `id`, `product_id`, `variant_name`, `additional_price` | Options belonging to one product |
 | `orders` | `id`, `user_id`, `total_amount`, `status`, `payment_status`, `created_at` | Customer order; owner can review and update status |
-| `order_items` | `id`, `order_id`, `product_id`, `quantity`, `unit_price`, `subtotal` | Immutable purchase snapshot for an order |
+| `order_items` | `id`, `order_id`, `product_id`, `variant_id`, `quantity`, `unit_price`, `subtotal` | Immutable purchase snapshot for an order |
 | `payment_proofs` | `id`, `order_id`, `user_id`, `image_path`, `status`, `created_at` | Uploaded payment evidence and review status |
 | `notifications` | `id`, `user_id`, `title`, `message`, `is_read`, `created_at` | In-app messages; only the owner of the row marks it read |
 | `chat_conversations` | `id`, `customer_id`, `status`, `created_at`, `updated_at` | One support conversation per customer; visible to that customer and owners |
@@ -58,6 +58,8 @@ Apply [`../supabase/migrations/20261020_chat.sql`](../supabase/migrations/202610
 ## Inventory rollout
 
 Apply [`../supabase/migrations/20261029_product_stock.sql`](../supabase/migrations/20261029_product_stock.sql) before using the updated product editor. The app displays and validates the manually maintained available quantity, but checkout does not yet reserve or decrement stock atomically. Add a server-side transactional checkout before treating the quantity as authoritative under concurrent orders.
+
+The checkout screen calls the `create_order_with_stock(jsonb)` RPC. Apply [`../supabase/migrations/20261104_create_order_with_stock.sql`](../supabase/migrations/20261104_create_order_with_stock.sql) in Supabase SQL Editor after the base `products`, `product_variants`, `orders`, and `order_items` tables exist. It recalculates totals from cloud prices, locks/checks stock, creates order rows, and decrements inventory in one transaction. The RPC is restricted to authenticated users. This migration has not been applied to the live Supabase project.
 
 ## Remaining product requirements
 

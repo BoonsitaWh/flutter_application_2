@@ -20,6 +20,8 @@
 
 ก่อนใช้หน้าตรวจสลิป ให้รัน migration `supabase/migrations/20261104_owner_order_review.sql` และตั้ง policy ให้เจ้าของร้านอ่าน `orders`, `order_items`, `payment_proofs` และอ่านไฟล์ใน private bucket `payment-proofs` ได้ การเพิ่ม migration ใน repository ไม่ได้ apply ไปยัง Supabase project โดยอัตโนมัติ
 
+ก่อนยืนยันคำสั่งซื้อ ให้รัน migration `supabase/migrations/20261104_create_order_with_stock.sql` หลังจากสร้างตารางหลักแล้ว เพื่อเพิ่ม RPC ที่ checkout เรียกใช้และตัดสต๊อกแบบ transaction
+
 ## เริ่มต้นใช้งาน
 
 ต้องติดตั้ง Flutter SDK ที่รองรับ Dart SDK `^3.12.2` และมีโปรเจกต์ Supabase ที่ตั้งค่าตาราง/Storage ให้ตรงกับ service ใน `lib/` ก่อน

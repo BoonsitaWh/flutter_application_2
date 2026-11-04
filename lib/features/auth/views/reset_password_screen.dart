@@ -1,3 +1,4 @@
+// รับรหัสผ่านใหม่และส่งให้ Supabase Auth บันทึกหลังยืนยันลิงก์
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

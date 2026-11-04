@@ -1,3 +1,4 @@
+// จัดการสถานะตะกร้า ปริมาณสินค้า และยอดรวม พร้อมแจ้งหน้าจอเมื่อข้อมูลเปลี่ยน
 import 'package:flutter/foundation.dart';
 import '../../product/models/product_model.dart';
 import '../models/cart_item_model.dart';

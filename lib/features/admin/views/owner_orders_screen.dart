@@ -1,3 +1,4 @@
+// แสดงรายการคำสั่งซื้อและตัวกรองสำหรับหน้าเจ้าของร้าน
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -130,9 +131,8 @@ class _OwnerOrdersScreenState extends State<OwnerOrdersScreen> {
                         final id = order['id'];
                         final payment = order['payment_status']?.toString();
                         final userId = order['user_id']?.toString() ?? '';
-                        final amount = (order['total_amount'] as num?)
-                                ?.toDouble() ??
-                            0;
+                        final amount =
+                            (order['total_amount'] as num?)?.toDouble() ?? 0;
                         return Card(
                           margin: const EdgeInsets.only(bottom: 10),
                           child: ListTile(
@@ -178,9 +178,8 @@ class _OwnerOrdersScreenState extends State<OwnerOrdersScreen> {
                               final changed = await Navigator.push<bool>(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => OwnerOrderDetailScreen(
-                                    orderId: id,
-                                  ),
+                                  builder: (_) =>
+                                      OwnerOrderDetailScreen(orderId: id),
                                 ),
                               );
                               if (changed == true) _loadOrders();

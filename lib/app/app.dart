@@ -1,3 +1,4 @@
+// สร้าง MaterialApp หลักและผูกธีมกับหน้าเริ่มต้นของแอป
 import 'package:flutter/material.dart';
 import 'config/routes.dart';
 

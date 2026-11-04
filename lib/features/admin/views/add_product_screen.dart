@@ -1,3 +1,4 @@
+// หน้าสำหรับเจ้าของร้านเพิ่มสินค้า ตัวเลือกย่อย และรูปภาพสินค้า
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -153,7 +154,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     if (stockQuantity == null || stockQuantity < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('กรุณากรอกสต๊อกเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป')),
+        const SnackBar(
+          content: Text('กรุณากรอกสต๊อกเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป'),
+        ),
       );
       return;
     }

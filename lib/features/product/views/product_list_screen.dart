@@ -1,3 +1,4 @@
+// แสดง แบ่งหมวด และค้นหาสินค้า รวมถึงเครื่องมือจัดการสินค้าเจ้าของร้าน
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -85,6 +86,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   // =========================
   Future<void> _showEditProductDialog(Product product) async {
     final picker = ImagePicker();
+    // URL ที่เก็บไว้จะคงอยู่กับสินค้า ส่วนไฟล์ใหม่จะรออัปโหลดตอนกดบันทึก
     final keptImageUrls = List<String>.from(product.imageUrls);
     final selectedImages = <XFile>[];
     final selectedImageBytes = <Uint8List>[];
@@ -131,6 +133,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
+                          // แสดงรูปเดิมและรูปที่เลือกใหม่ พร้อมนำแต่ละรูปออกได้
                           for (
                             var index = 0;
                             index < keptImageUrls.length;
@@ -165,6 +168,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           OutlinedButton.icon(
                             onPressed: () async {
                               try {
+                                // เลือกรูปได้หลายไฟล์และอ่าน bytes เพื่ออัปโหลดภายหลัง
                                 final picked = await picker.pickMultiImage();
                                 if (picked.isEmpty) return;
                                 final bytes = <Uint8List>[];
@@ -319,6 +323,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                           setDialogState(() => isSaving = true);
                           try {
+                            // อัปโหลดไฟล์ใหม่ก่อน แล้วรวม URL กับรูปเดิมที่ยังเลือกไว้
                             final uploadedImageUrls = await _productService
                                 .uploadProductImages(
                                   List.generate(

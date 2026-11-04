@@ -1,3 +1,4 @@
+// แปลงข้อมูลโปรไฟล์ผู้ใช้ระหว่างรูปแบบฐานข้อมูลกับ Dart model
 class UserModel {
   final String id;
   final String email;

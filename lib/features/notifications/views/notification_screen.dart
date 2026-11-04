@@ -1,3 +1,4 @@
+// แสดงการแจ้งเตือนและปรับสถานะเป็นอ่านแล้วเมื่อผู้ใช้เปิดรายการ
 import 'package:flutter/material.dart';
 
 import '../services/notification_service.dart';
@@ -29,9 +30,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
       await _service.markAsRead((notification['id'] as num).toInt());
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('อัปเดตไม่สำเร็จ: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('อัปเดตไม่สำเร็จ: $error')));
     }
   }
 

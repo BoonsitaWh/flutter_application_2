@@ -1,3 +1,4 @@
+// ติดต่อ Supabase เพื่อเปิดห้อง สนทนา ส่ง แก้ไข และลบข้อความ
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatService {

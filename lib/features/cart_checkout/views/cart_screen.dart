@@ -1,3 +1,4 @@
+// แสดงสินค้าในตะกร้าและให้ลูกค้าปรับจำนวนหรือลบรายการ
 import 'package:flutter/material.dart';
 import '../controllers/cart_controller.dart';
 import 'checkout_screen.dart';
@@ -52,8 +53,7 @@ class CartScreen extends StatelessWidget {
                                 final isNarrow = constraints.maxWidth < 300;
 
                                 final productInfo = Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       product.name,

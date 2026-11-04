@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -6,12 +5,10 @@ class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
 
   @override
-  State<ResetPasswordScreen> createState() =>
-      _ResetPasswordScreenState();
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState
-    extends State<ResetPasswordScreen> {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
@@ -36,9 +33,7 @@ class _ResetPasswordScreenState
     if (supabase.auth.currentSession == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'ไม่พบเซสชันรีเซ็ตรหัสผ่าน กรุณาขอลิงก์ใหม่',
-          ),
+          content: Text('ไม่พบเซสชันรีเซ็ตรหัสผ่าน กรุณาขอลิงก์ใหม่'),
         ),
       );
       return;
@@ -48,9 +43,7 @@ class _ResetPasswordScreenState
 
     try {
       await supabase.auth.updateUser(
-        UserAttributes(
-          password: _passwordController.text,
-        ),
+        UserAttributes(password: _passwordController.text),
       );
 
       if (!mounted) return;
@@ -67,9 +60,7 @@ class _ResetPasswordScreenState
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                Navigator.of(context).popUntil(
-                  (route) => route.isFirst,
-                );
+                Navigator.of(context).popUntil((route) => route.isFirst);
               },
               child: const Text('ตกลง'),
             ),
@@ -80,17 +71,13 @@ class _ResetPasswordScreenState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('เปลี่ยนรหัสผ่านไม่สำเร็จ: ${e.message}'),
-        ),
+        SnackBar(content: Text('เปลี่ยนรหัสผ่านไม่สำเร็จ: ${e.message}')),
       );
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
-        ),
+        const SnackBar(content: Text('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -100,9 +87,7 @@ class _ResetPasswordScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ตั้งรหัสผ่านใหม่'),
-      ),
+      appBar: AppBar(title: const Text('ตั้งรหัสผ่านใหม่')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -113,19 +98,12 @@ class _ResetPasswordScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(
-                    Icons.lock_reset,
-                    size: 72,
-                    color: Colors.orange,
-                  ),
+                  const Icon(Icons.lock_reset, size: 72, color: Colors.orange),
                   const SizedBox(height: 16),
                   const Text(
                     'ตั้งรหัสผ่านใหม่',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
@@ -200,3 +178,4 @@ class _ResetPasswordScreenState
     );
   }
 }
+// รับรหัสผ่านใหม่และส่งให้ Supabase Auth บันทึกหลังยืนยันลิงก์

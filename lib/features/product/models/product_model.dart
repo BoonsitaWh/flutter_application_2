@@ -1,3 +1,4 @@
+// แทนตัวเลือกย่อยของสินค้า เช่น รสชาติหรือขนาดและราคาที่เพิ่ม
 class ProductVariant {
   final String id;
   final String variantName;
@@ -13,8 +14,7 @@ class ProductVariant {
     return ProductVariant(
       id: json['id'].toString(),
       variantName: json['variant_name'] ?? '',
-      additionalPrice:
-          (json['additional_price'] as num?)?.toDouble() ?? 0.0,
+      additionalPrice: (json['additional_price'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
@@ -57,10 +57,10 @@ class Product {
       stockQuantity: (json['stock_quantity'] as num?)?.toInt(),
       variants: json['product_variants'] != null
           ? (json['product_variants'] as List)
-              .map((v) => ProductVariant.fromJson(
-                    Map<String, dynamic>.from(v),
-                  ))
-              .toList()
+                .map(
+                  (v) => ProductVariant.fromJson(Map<String, dynamic>.from(v)),
+                )
+                .toList()
           : [],
     );
   }

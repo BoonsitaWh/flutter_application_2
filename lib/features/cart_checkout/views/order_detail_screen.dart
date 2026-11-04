@@ -1,3 +1,4 @@
+// แสดงสถานะ ค่าสั่งซื้อ และหลักฐานชำระเงินของคำสั่งซื้อหนึ่งรายการ
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'payment_proof_screen.dart';
@@ -5,10 +6,7 @@ import 'payment_proof_screen.dart';
 class OrderDetailScreen extends StatefulWidget {
   final int orderId;
 
-  const OrderDetailScreen({
-    super.key,
-    required this.orderId,
-  });
+  const OrderDetailScreen({super.key, required this.orderId});
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -75,18 +73,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       String? paymentProofUrl;
 
       if (paymentResponse.isNotEmpty) {
-        paymentProof =
-            Map<String, dynamic>.from(paymentResponse.first);
+        paymentProof = Map<String, dynamic>.from(paymentResponse.first);
 
         final imagePath = paymentProof['image_path'];
 
         if (imagePath != null && imagePath.toString().isNotEmpty) {
           paymentProofUrl = await _supabase.storage
               .from('payment-proofs')
-              .createSignedUrl(
-                imagePath.toString(),
-                60 * 60,
-              );
+              .createSignedUrl(imagePath.toString(), 60 * 60);
         }
       }
 
@@ -94,8 +88,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
       setState(() {
         _order = Map<String, dynamic>.from(orderResponse);
-        _orderItems =
-            List<Map<String, dynamic>>.from(itemsResponse);
+        _orderItems = List<Map<String, dynamic>>.from(itemsResponse);
 
         _paymentProof = paymentProof;
         _paymentProofUrl = paymentProofUrl;
@@ -111,9 +104,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'โหลดรายละเอียดคำสั่งซื้อไม่สำเร็จ: $e',
-          ),
+          content: Text('โหลดรายละเอียดคำสั่งซื้อไม่สำเร็จ: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -199,37 +190,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'รายละเอียดคำสั่งซื้อ #${widget.orderId}',
-        ),
-      ),
+      appBar: AppBar(title: Text('รายละเอียดคำสั่งซื้อ #${widget.orderId}')),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : _order == null
-              ? const Center(
-                  child: Text('ไม่พบข้อมูลคำสั่งซื้อ'),
-                )
-              : _buildOrderDetail(),
+          ? const Center(child: Text('ไม่พบข้อมูลคำสั่งซื้อ'))
+          : _buildOrderDetail(),
     );
   }
 
   Widget _buildOrderDetail() {
     final order = _order!;
 
-    final double totalAmount =
-        (order['total_amount'] as num).toDouble();
+    final double totalAmount = (order['total_amount'] as num).toDouble();
 
-    final String status =
-        order['status'] ?? 'pending';
+    final String status = order['status'] ?? 'pending';
 
-    final String paymentStatus =
-        order['payment_status'] ?? 'unpaid';
+    final String paymentStatus = order['payment_status'] ?? 'unpaid';
 
-    final String createdAt =
-        order['created_at'] ?? '';
+    final String createdAt = order['created_at'] ?? '';
 
     return RefreshIndicator(
       onRefresh: _loadOrderDetail,
@@ -243,8 +222,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'คำสั่งซื้อ #${widget.orderId}',
@@ -261,24 +239,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       const Text('สถานะ: '),
 
                       Container(
-                        padding:
-                            const EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: _statusColor(status)
-                              .withValues(alpha: 0.15),
-                          borderRadius:
-                              BorderRadius.circular(20),
+                          color: _statusColor(status).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           _statusText(status),
                           style: TextStyle(
-                            color:
-                                _statusColor(status),
-                            fontWeight:
-                                FontWeight.bold,
+                            color: _statusColor(status),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -297,9 +270,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   Text(
                     'วันที่สั่งซื้อ: '
                     '${_formatDate(createdAt)}',
-                    style: const TextStyle(
-                      color: Colors.grey,
-                    ),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -313,10 +284,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           // =========================
           const Text(
             'รายการสินค้า',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 10),
@@ -325,98 +293,77 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(20),
-                child: Center(
-                  child: Text(
-                    'ไม่พบรายการสินค้า',
-                  ),
-                ),
+                child: Center(child: Text('ไม่พบรายการสินค้า')),
               ),
             ),
 
-          ..._orderItems.map(
-            (item) {
-              final product =
-                  item['products']
-                      as Map<String, dynamic>?;
+          ..._orderItems.map((item) {
+            final product = item['products'] as Map<String, dynamic>?;
 
-              final String productName =
-                  product?['name'] ?? 'สินค้า';
+            final String productName = product?['name'] ?? 'สินค้า';
 
-              final int quantity =
-                  item['quantity'] ?? 0;
+            final int quantity = item['quantity'] ?? 0;
 
-              final double unitPrice =
-                  (item['unit_price'] as num)
-                      .toDouble();
+            final double unitPrice = (item['unit_price'] as num).toDouble();
 
-              final double subtotal =
-                  (item['subtotal'] as num)
-                      .toDouble();
+            final double subtotal = (item['subtotal'] as num).toDouble();
 
-              return Card(
-                margin:
-                    const EdgeInsets.only(bottom: 10),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 55,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color:
-                              Colors.orange.shade50,
-                          borderRadius:
-                              BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.cake,
-                          color: Colors.orange,
-                          size: 30,
-                        ),
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 55,
+                      height: 55,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      child: const Icon(
+                        Icons.cake,
+                        color: Colors.orange,
+                        size: 30,
+                      ),
+                    ),
 
-                      const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              productName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight:
-                                    FontWeight.bold,
-                              ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            productName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
+                          ),
 
-                            const SizedBox(height: 5),
+                          const SizedBox(height: 5),
 
-                            Text(
-                              '฿${unitPrice.toStringAsFixed(2)} × $quantity',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
+                          Text(
+                            '฿${unitPrice.toStringAsFixed(2)} × $quantity',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
                       ),
+                    ),
 
-                      Text(
-                        '฿${subtotal.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                    Text(
+                      '฿${subtotal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          }),
 
           const SizedBox(height: 10),
 
@@ -427,15 +374,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
                     'ยอดรวมทั้งหมด',
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                   ),
 
                   Text(
@@ -443,8 +386,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     style: TextStyle(
                       fontSize: 21,
                       fontWeight: FontWeight.bold,
-                      color:
-                          Theme.of(context).primaryColor,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 ],
@@ -461,15 +403,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'หลักฐานการชำระเงิน',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 12),
@@ -480,38 +418,28 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       children: [
                         const Text(
                           'สถานะ: ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Container(
-                          padding:
-                              const EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color:
-                                _paymentProofStatusColor(
-                              _paymentProof!['status'] ??
-                                  'pending',
+                            color: _paymentProofStatusColor(
+                              _paymentProof!['status'] ?? 'pending',
                             ).withValues(alpha: 0.15),
-                            borderRadius:
-                                BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             _paymentProofStatusText(
-                              _paymentProof!['status'] ??
-                                  'pending',
+                              _paymentProof!['status'] ?? 'pending',
                             ),
                             style: TextStyle(
-                              color:
-                                  _paymentProofStatusColor(
-                                _paymentProof!['status'] ??
-                                    'pending',
+                              color: _paymentProofStatusColor(
+                                _paymentProof!['status'] ?? 'pending',
                               ),
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -523,43 +451,26 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     // แสดงรูปสลิป
                     if (_paymentProofUrl != null)
                       ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12),
                         child: Image.network(
                           _paymentProofUrl!,
                           width: double.infinity,
                           fit: BoxFit.contain,
-                          loadingBuilder:
-                              (
-                                context,
-                                child,
-                                loadingProgress,
-                              ) {
-                            if (loadingProgress ==
-                                null) {
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
                               return child;
                             }
 
                             return const SizedBox(
                               height: 300,
-                              child: Center(
-                                child:
-                                    CircularProgressIndicator(),
-                              ),
+                              child: Center(child: CircularProgressIndicator()),
                             );
                           },
-                          errorBuilder:
-                              (
-                                context,
-                                error,
-                                stackTrace,
-                              ) {
+                          errorBuilder: (context, error, stackTrace) {
                             return const SizedBox(
                               height: 200,
                               child: Center(
-                                child: Text(
-                                  'ไม่สามารถแสดงรูปสลิปได้',
-                                ),
+                                child: Text('ไม่สามารถแสดงรูปสลิปได้'),
                               ),
                             );
                           },
@@ -568,19 +479,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     else
                       const Text(
                         'ไม่สามารถโหลดรูปสลิปได้',
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(color: Colors.grey),
                       ),
                   ]
-
                   // ถ้ายังไม่มีหลักฐาน
                   else ...[
                     const Text(
                       'ยังไม่มีการส่งหลักฐานการชำระเงิน',
-                      style: TextStyle(
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(color: Colors.grey),
                     ),
 
                     const SizedBox(height: 15),
@@ -590,15 +496,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       height: 50,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final result =
-                              await Navigator.push(
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  PaymentProofScreen(
-                                orderId:
-                                    widget.orderId,
-                              ),
+                                  PaymentProofScreen(orderId: widget.orderId),
                             ),
                           );
 
@@ -606,13 +508,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             _loadOrderDetail();
                           }
                         },
-                        icon: const Icon(
-                          Icons.upload_file,
-                        ),
+                        icon: const Icon(Icons.upload_file),
                         label: const Text(
                           'อัปโหลดหลักฐานการชำระเงิน',
-                          style:
-                              TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16),
                         ),
                       ),
                     ),

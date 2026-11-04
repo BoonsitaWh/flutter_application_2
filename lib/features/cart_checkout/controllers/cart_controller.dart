@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import '../../product/models/product_model.dart';
 import '../models/cart_item_model.dart';
@@ -9,24 +8,15 @@ class CartController extends ChangeNotifier {
   List<CartItem> get items => List.unmodifiable(_items);
 
   int get itemCount {
-    return _items.fold(
-      0,
-      (total, item) => total + item.quantity,
-    );
+    return _items.fold(0, (total, item) => total + item.quantity);
   }
 
   double get totalPrice {
-    return _items.fold(
-      0,
-      (total, item) => total + item.totalPrice,
-    );
+    return _items.fold(0, (total, item) => total + item.totalPrice);
   }
 
   // เพิ่มสินค้า + ตัวเลือก
-  bool addToCart(
-    Product product, {
-    ProductVariant? selectedVariant,
-  }) {
+  bool addToCart(Product product, {ProductVariant? selectedVariant}) {
     // ถ้ากำหนดสต๊อกไว้และเหลือน้อยกว่า 1 ชิ้น ให้ปฏิเสธ
     final stock = product.stockQuantity;
     if (stock != null && stock < 1) return false;
@@ -44,12 +34,7 @@ class CartController extends ChangeNotifier {
       }
       _items[index].quantity++;
     } else {
-      _items.add(
-        CartItem(
-          product: product,
-          selectedVariant: selectedVariant,
-        ),
-      );
+      _items.add(CartItem(product: product, selectedVariant: selectedVariant));
     }
 
     notifyListeners();
@@ -92,3 +77,4 @@ class CartController extends ChangeNotifier {
     notifyListeners();
   }
 }
+// จัดการสถานะตะกร้า ปริมาณสินค้า และยอดรวม พร้อมแจ้งหน้าจอเมื่อข้อมูลเปลี่ยน

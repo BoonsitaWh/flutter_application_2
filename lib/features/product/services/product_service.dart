@@ -1,3 +1,4 @@
+// อ่าน เพิ่ม แก้ไข และซ่อนสินค้า พร้อมซิงก์ข้อมูลกับ Supabase และแคชในเครื่อง
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_application_1/features/product/models/product_model.dart';
@@ -49,6 +50,7 @@ class ProductService {
   Future<List<String>> uploadProductImages(
     List<({String name, Uint8List bytes})> images,
   ) async {
+    // อัปโหลดทีละไฟล์และคืน public URL เพื่อนำไปบันทึกไว้กับสินค้า
     final urls = <String>[];
 
     for (final image in images) {
@@ -96,6 +98,7 @@ class ProductService {
     required List<String> variants,
     List<String> imageUrls = const [],
   }) async {
+    // บันทึกข้อมูลสินค้าและตัวเลือกย่อยก่อนซิงก์สำเนาลงแคชในเครื่อง
     // ตรวจสอบบัญชีที่กำลังเข้าสู่ระบบ
     debugPrint('CURRENT USER ID: ${_supabase.auth.currentUser?.id}');
     debugPrint('CURRENT USER EMAIL: ${_supabase.auth.currentUser?.email}');
@@ -159,6 +162,7 @@ class ProductService {
     required int stockQuantity,
     required List<String> imageUrls,
   }) async {
+    // อัปเดตทั้งฐานข้อมูลบนคลาวด์และแคช เพื่อให้หน้ารายการเห็นข้อมูลล่าสุด
     await _supabase
         .from('products')
         .update({

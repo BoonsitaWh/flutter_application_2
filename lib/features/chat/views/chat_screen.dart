@@ -1,3 +1,4 @@
+// แสดงบทสนทนาแบบเรียลไทม์ พร้อมส่ง แก้ไข และลบข้อความของตัวเอง
 import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
 import '../utils/chat_message_order.dart';
@@ -97,9 +98,9 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('แก้ไขข้อความไม่สำเร็จ: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('แก้ไขข้อความไม่สำเร็จ: $error')));
     }
   }
 
@@ -131,9 +132,9 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ลบข้อความไม่สำเร็จ: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ลบข้อความไม่สำเร็จ: $error')));
     }
   }
 

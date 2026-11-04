@@ -1,3 +1,4 @@
+// แสดงรายละเอียดคำสั่งซื้อให้เจ้าของร้านตรวจสลิปและปรับสถานะ
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,8 +8,7 @@ class OwnerOrderDetailScreen extends StatefulWidget {
   const OwnerOrderDetailScreen({super.key, required this.orderId});
 
   @override
-  State<OwnerOrderDetailScreen> createState() =>
-      _OwnerOrderDetailScreenState();
+  State<OwnerOrderDetailScreen> createState() => _OwnerOrderDetailScreenState();
 }
 
 class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
@@ -126,9 +126,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            approve ? 'ยืนยันการชำระเงินแล้ว' : 'ปฏิเสธสลิปแล้ว',
-          ),
+          content: Text(approve ? 'ยืนยันการชำระเงินแล้ว' : 'ปฏิเสธสลิปแล้ว'),
         ),
       );
 
@@ -137,9 +135,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('บันทึกผลตรวจสลิปไม่สำเร็จ: $error'),
-        ),
+        SnackBar(content: Text('บันทึกผลตรวจสลิปไม่สำเร็จ: $error')),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -190,40 +186,32 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _errorView()
-              : _orderView(),
+          ? _errorView()
+          : _orderView(),
     );
   }
 
   Widget _errorView() => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, size: 44),
-              const SizedBox(height: 12),
-              const Text('โหลดรายละเอียดคำสั่งซื้อไม่สำเร็จ'),
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: _load,
-                child: const Text('ลองอีกครั้ง'),
-              ),
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.error_outline, size: 44),
+          const SizedBox(height: 12),
+          const Text('โหลดรายละเอียดคำสั่งซื้อไม่สำเร็จ'),
+          const SizedBox(height: 8),
+          Text(_error!, maxLines: 4, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 12),
+          OutlinedButton(onPressed: _load, child: const Text('ลองอีกครั้ง')),
+        ],
+      ),
+    ),
+  );
 
   Widget _orderView() {
     final order = _order!;
-    final paymentStatus =
-        order['payment_status']?.toString() ?? 'unpaid';
+    final paymentStatus = order['payment_status']?.toString() ?? 'unpaid';
     final orderStatus = order['status']?.toString() ?? 'pending';
     final amount = (order['total_amount'] as num?)?.toDouble() ?? 0;
     final canReview = _proof?['status'] == 'pending';
@@ -251,15 +239,10 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Text(
-          'รายการสินค้า',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        Text('รายการสินค้า', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 6),
         if (_items.isEmpty)
-          const Card(
-            child: ListTile(title: Text('ไม่พบรายการสินค้า')),
-          )
+          const Card(child: ListTile(title: Text('ไม่พบรายการสินค้า')))
         else
           ..._items.map((item) {
             final product = item['products'];
@@ -267,8 +250,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
                 ? product['name']?.toString() ?? 'สินค้า'
                 : 'สินค้า';
             final quantity = (item['quantity'] as num?)?.toInt() ?? 0;
-            final subtotal =
-                (item['subtotal'] as num?)?.toDouble() ?? 0;
+            final subtotal = (item['subtotal'] as num?)?.toDouble() ?? 0;
 
             return Card(
               child: ListTile(
@@ -285,9 +267,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
         ),
         const SizedBox(height: 6),
         if (_proof == null)
-          const Card(
-            child: ListTile(title: Text('ลูกค้ายังไม่ได้ส่งสลิป')),
-          )
+          const Card(child: ListTile(title: Text('ลูกค้ายังไม่ได้ส่งสลิป')))
         else ...[
           Card(
             child: Column(
@@ -312,9 +292,7 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
                     child: Text('โหลดสลิปไม่ได้ ตรวจ Storage policy'),
                   ),
                 ListTile(
-                  title: Text(
-                    'สถานะสลิป: ${_proofLabel(_proof!['status'])}',
-                  ),
+                  title: Text('สถานะสลิป: ${_proofLabel(_proof!['status'])}'),
                   subtitle: Text(
                     'อัปโหลดเมื่อ ${_dateLabel(_proof!['created_at'])}',
                   ),
@@ -371,11 +349,11 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
   }
 
   Widget _statusButton(String value, String label) => OutlinedButton(
-        onPressed: _saving || _order?['status'] == value
-            ? null
-            : () => _setOrderStatus(value),
-        child: Text(label),
-      );
+    onPressed: _saving || _order?['status'] == value
+        ? null
+        : () => _setOrderStatus(value),
+    child: Text(label),
+  );
 
   String _dateLabel(Object? value) {
     final date = DateTime.tryParse(value?.toString() ?? '')?.toLocal();
@@ -387,24 +365,24 @@ class _OwnerOrderDetailScreenState extends State<OwnerOrderDetailScreen> {
   }
 
   String _paymentLabel(String status) => switch (status) {
-        'pending' => 'รอตรวจสอบ',
-        'paid' => 'ชำระแล้ว',
-        'unpaid' => 'ยังไม่ชำระ',
-        _ => status,
-      };
+    'pending' => 'รอตรวจสอบ',
+    'paid' => 'ชำระแล้ว',
+    'unpaid' => 'ยังไม่ชำระ',
+    _ => status,
+  };
 
   String _proofLabel(Object? status) => switch (status?.toString()) {
-        'pending' => 'รอตรวจสอบ',
-        'approved' => 'อนุมัติแล้ว',
-        'rejected' => 'ปฏิเสธ',
-        _ => status?.toString() ?? 'ไม่ทราบสถานะ',
-      };
+    'pending' => 'รอตรวจสอบ',
+    'approved' => 'อนุมัติแล้ว',
+    'rejected' => 'ปฏิเสธ',
+    _ => status?.toString() ?? 'ไม่ทราบสถานะ',
+  };
 
   String _orderStatusLabel(String status) => switch (status) {
-        'pending' => 'รอดำเนินการ',
-        'confirmed' => 'ยืนยันแล้ว',
-        'completed' => 'เสร็จสิ้น',
-        'cancelled' => 'ยกเลิก',
-        _ => status,
-      };
+    'pending' => 'รอดำเนินการ',
+    'confirmed' => 'ยืนยันแล้ว',
+    'completed' => 'เสร็จสิ้น',
+    'cancelled' => 'ยกเลิก',
+    _ => status,
+  };
 }

@@ -1,3 +1,4 @@
+// รวมการสมัคร เข้าสู่ระบบ ออกจากระบบ และจัดการโปรไฟล์ผ่าน Supabase Auth
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {

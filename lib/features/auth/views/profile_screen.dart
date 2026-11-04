@@ -1,3 +1,4 @@
+// ให้ผู้ใช้ดูและแก้ไขข้อมูลบัญชี พร้อมจัดการการลบบัญชี
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -27,21 +28,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final profile = _authService.getProfileData();
 
-    _emailController = TextEditingController(
-      text: profile['email'] ?? '',
-    );
+    _emailController = TextEditingController(text: profile['email'] ?? '');
 
-    _nameController = TextEditingController(
-      text: profile['full_name'] ?? '',
-    );
+    _nameController = TextEditingController(text: profile['full_name'] ?? '');
 
-    _phoneController = TextEditingController(
-      text: profile['phone'] ?? '',
-    );
+    _phoneController = TextEditingController(text: profile['phone'] ?? '');
 
-    _addressController = TextEditingController(
-      text: profile['address'] ?? '',
-    );
+    _addressController = TextEditingController(text: profile['address'] ?? '');
   }
 
   @override
@@ -177,9 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('โปรไฟล์ของฉัน'),
-      ),
+      appBar: AppBar(title: const Text('โปรไฟล์ของฉัน')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -188,10 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               const CircleAvatar(
                 radius: 45,
-                child: Icon(
-                  Icons.person,
-                  size: 50,
-                ),
+                child: Icon(Icons.person, size: 50),
               ),
 
               const SizedBox(height: 25),
@@ -269,9 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _isLoading || _isDeleting
-                      ? null
-                      : _saveProfile,
+                  onPressed: _isLoading || _isDeleting ? null : _saveProfile,
                   child: _isLoading
                       ? const CircularProgressIndicator()
                       : const Text(
@@ -290,9 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton.icon(
-                  onPressed: _isLoading || _isDeleting
-                      ? null
-                      : _deleteAccount,
+                  onPressed: _isLoading || _isDeleting ? null : _deleteAccount,
                   icon: _isDeleting
                       ? const SizedBox(
                           width: 20,
@@ -304,9 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )
                       : const Icon(Icons.delete),
                   label: Text(
-                    _isDeleting
-                        ? 'กำลังลบบัญชี...'
-                        : 'ลบบัญชี',
+                    _isDeleting ? 'กำลังลบบัญชี...' : 'ลบบัญชี',
                     style: const TextStyle(fontSize: 16),
                   ),
                   style: ElevatedButton.styleFrom(

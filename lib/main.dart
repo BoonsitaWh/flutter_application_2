@@ -1,3 +1,4 @@
+// จุดเริ่มต้นแอป ตั้งค่า Supabase และเลือกหน้าตามสถานะเข้าสู่ระบบกับบทบาท
 import 'dart:async';
 
 import 'package:flutter/material.dart';

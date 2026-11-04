@@ -1,3 +1,4 @@
+// โหลดและแสดงประวัติคำสั่งซื้อของลูกค้าที่เข้าสู่ระบบ
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -58,9 +59,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'โหลดประวัติการสั่งซื้อไม่สำเร็จ: $e',
-          ),
+          content: Text('โหลดประวัติการสั่งซื้อไม่สำเร็จ: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -133,223 +132,180 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ประวัติการสั่งซื้อ'),
-      ),
+      appBar: AppBar(title: const Text('ประวัติการสั่งซื้อ')),
 
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-
+          ? const Center(child: CircularProgressIndicator())
           : _orders.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.receipt_long,
-                        size: 70,
-                        color: Colors.grey,
-                      ),
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.receipt_long, size: 70, color: Colors.grey),
 
-                      SizedBox(height: 15),
+                  SizedBox(height: 15),
 
-                      Text(
-                        'ยังไม่มีประวัติการสั่งซื้อ',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'ยังไม่มีประวัติการสั่งซื้อ',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
-                )
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadOrders,
 
-              : RefreshIndicator(
-                  onRefresh: _loadOrders,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
 
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                itemCount: _orders.length,
 
-                    itemCount: _orders.length,
+                itemBuilder: (context, index) {
+                  final order = _orders[index];
 
-                    itemBuilder: (context, index) {
-                      final order = _orders[index];
+                  // ID คำสั่งซื้อ
+                  final int orderId = (order['id'] as num).toInt();
 
-                      // ID คำสั่งซื้อ
-                      final int orderId =
-                          (order['id'] as num).toInt();
+                  // ยอดรวม
+                  final double totalAmount = (order['total_amount'] as num)
+                      .toDouble();
 
-                      // ยอดรวม
-                      final double totalAmount =
-                          (order['total_amount'] as num)
-                              .toDouble();
+                  // สถานะคำสั่งซื้อ
+                  final String status = order['status'] ?? 'pending';
 
-                      // สถานะคำสั่งซื้อ
-                      final String status =
-                          order['status'] ?? 'pending';
+                  // สถานะการชำระเงิน
+                  final String paymentStatus =
+                      order['payment_status'] ?? 'unpaid';
 
-                      // สถานะการชำระเงิน
-                      final String paymentStatus =
-                          order['payment_status'] ?? 'unpaid';
+                  // วันที่สั่งซื้อ
+                  final String createdAt = order['created_at'] ?? '';
 
-                      // วันที่สั่งซื้อ
-                      final String createdAt =
-                          order['created_at'] ?? '';
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
 
-                      return Card(
-                        margin: const EdgeInsets.only(
-                          bottom: 12,
-                        ),
+                    elevation: 2,
 
-                        elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
 
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
 
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                        children: [
+                          // =========================
+                          // หัวข้อคำสั่งซื้อ
+                          // =========================
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                             children: [
-
-                              // =========================
-                              // หัวข้อคำสั่งซื้อ
-                              // =========================
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment
-                                        .spaceBetween,
-
-                                children: [
-                                  Text(
-                                    'คำสั่งซื้อ #$orderId',
-
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight:
-                                          FontWeight.bold,
-                                    ),
-                                  ),
-
-                                  Container(
-                                    padding:
-                                        const EdgeInsets
-                                            .symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
-                                    ),
-
-                                    decoration:
-                                        BoxDecoration(
-                                      color: _statusColor(
-                                        status,
-                                      ).withValues(alpha: 0.15),
-
-                                      borderRadius:
-                                          BorderRadius.circular(
-                                        20,
-                                      ),
-                                    ),
-
-                                    child: Text(
-                                      _statusText(status),
-
-                                      style: TextStyle(
-                                        color:
-                                            _statusColor(
-                                          status,
-                                        ),
-
-                                        fontWeight:
-                                            FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // =========================
-                              // ยอดรวม
-                              // =========================
                               Text(
-                                'ยอดรวม: ฿${totalAmount.toStringAsFixed(2)}',
+                                'คำสั่งซื้อ #$orderId',
 
                                 style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight:
-                                      FontWeight.bold,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
 
-                              const SizedBox(height: 6),
-
-                              // =========================
-                              // สถานะการชำระเงิน
-                              // =========================
-                              Text(
-                                'สถานะการชำระเงิน: '
-                                '${_paymentStatusText(paymentStatus)}',
-                              ),
-
-                              const SizedBox(height: 6),
-
-                              // =========================
-                              // วันที่สั่งซื้อ
-                              // =========================
-                              Text(
-                                'วันที่สั่งซื้อ: '
-                                '${_formatDate(createdAt)}',
-
-                                style: const TextStyle(
-                                  color: Colors.grey,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
                                 ),
-                              ),
 
-                              const SizedBox(height: 12),
+                                decoration: BoxDecoration(
+                                  color: _statusColor(
+                                    status,
+                                  ).withValues(alpha: 0.15),
 
-                              // =========================
-                              // ปุ่มรายละเอียดคำสั่งซื้อ
-                              // =========================
-                              SizedBox(
-                                width: double.infinity,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
 
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
+                                child: Text(
+                                  _statusText(status),
 
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            OrderDetailScreen(
-                                          orderId: orderId,
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                  style: TextStyle(
+                                    color: _statusColor(status),
 
-                                  icon: const Icon(
-                                    Icons.receipt_long,
-                                  ),
-
-                                  label: const Text(
-                                    'รายละเอียดคำสั่งซื้อ',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                    ),
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+
+                          const SizedBox(height: 12),
+
+                          // =========================
+                          // ยอดรวม
+                          // =========================
+                          Text(
+                            'ยอดรวม: ฿${totalAmount.toStringAsFixed(2)}',
+
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          // =========================
+                          // สถานะการชำระเงิน
+                          // =========================
+                          Text(
+                            'สถานะการชำระเงิน: '
+                            '${_paymentStatusText(paymentStatus)}',
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          // =========================
+                          // วันที่สั่งซื้อ
+                          // =========================
+                          Text(
+                            'วันที่สั่งซื้อ: '
+                            '${_formatDate(createdAt)}',
+
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // =========================
+                          // ปุ่มรายละเอียดคำสั่งซื้อ
+                          // =========================
+                          SizedBox(
+                            width: double.infinity,
+
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        OrderDetailScreen(orderId: orderId),
+                                  ),
+                                );
+                              },
+
+                              icon: const Icon(Icons.receipt_long),
+
+                              label: const Text(
+                                'รายละเอียดคำสั่งซื้อ',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

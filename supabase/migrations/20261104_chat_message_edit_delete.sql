@@ -1,4 +1,4 @@
--- Let each participant edit or delete only their own messages in open chats.
+-- เพิ่มเวลาแก้ไขและจำกัดการแก้/ลบข้อความให้เจ้าของข้อความในห้องที่ยังเปิดอยู่
 alter table public.chat_messages
   add column if not exists edited_at timestamptz;
 

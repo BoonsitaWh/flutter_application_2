@@ -1,3 +1,4 @@
+// เก็บสินค้าและจำนวนที่ลูกค้าเลือกไว้ในตะกร้าก่อนสั่งซื้อ
 import '../../product/models/product_model.dart';
 
 class CartItem {
@@ -8,16 +9,11 @@ class CartItem {
 
   int quantity;
 
-  CartItem({
-    required this.product,
-    this.selectedVariant,
-    this.quantity = 1,
-  });
+  CartItem({required this.product, this.selectedVariant, this.quantity = 1});
 
   // ราคาต่อชิ้น
   double get unitPrice {
-    return product.basePrice +
-        (selectedVariant?.additionalPrice ?? 0);
+    return product.basePrice + (selectedVariant?.additionalPrice ?? 0);
   }
 
   // ราคารวม

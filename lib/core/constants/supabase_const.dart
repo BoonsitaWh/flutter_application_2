@@ -1,3 +1,4 @@
+// เก็บค่าคงที่ที่ใช้เชื่อมต่อ Supabase โดยไม่กระจายค่าไว้หลายไฟล์
 class SupabaseConst {
   static const String supabaseUrl = 'YOUR_SUPABASE_URL';
   static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';

@@ -1,3 +1,4 @@
+// ทดสอบการบันทึก อ่าน อัปเดต และซ่อนสินค้าในแคช SQLite
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/core/services/product_cache.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;

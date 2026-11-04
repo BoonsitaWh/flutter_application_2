@@ -1,3 +1,4 @@
+// รวมสีและธีมกลาง เพื่อให้หน้าจอใช้รูปลักษณ์เดียวกันทั้งแอป
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

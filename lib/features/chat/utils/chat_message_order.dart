@@ -1,3 +1,4 @@
+// จัดเรียงข้อความตามเวลา เพื่อให้ลำดับในแชทคงที่แม้ข้อมูลมาจากสตรีม
 class ChatMessageOrder {
   const ChatMessageOrder._();
 

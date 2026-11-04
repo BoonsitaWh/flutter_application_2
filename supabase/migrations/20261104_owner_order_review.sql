@@ -1,3 +1,4 @@
+-- ให้เจ้าของร้านตรวจสลิปและปรับสถานะชำระเงินผ่านฟังก์ชันที่ตรวจสิทธิ์ฝั่งฐานข้อมูล
 create or replace function public.review_payment_for_order(
   p_order_id bigint,
   p_approved boolean

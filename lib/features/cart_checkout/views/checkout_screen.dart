@@ -1,3 +1,4 @@
+// ตรวจรายละเอียดตะกร้าและสร้างคำสั่งซื้อก่อนเข้าสู่ขั้นตอนแจ้งชำระเงิน
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,10 +8,7 @@ import 'payment_proof_screen.dart';
 class CheckoutScreen extends StatefulWidget {
   final CartController cartController;
 
-  const CheckoutScreen({
-    super.key,
-    required this.cartController,
-  });
+  const CheckoutScreen({super.key, required this.cartController});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -81,7 +79,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'variant_id': variantId,
           'quantity': item.quantity,
         });
-
       }
 
       final double fallbackTotal = cartItems.fold<double>(
@@ -92,9 +89,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       // เรียก Supabase เพื่อสร้างคำสั่งซื้อจริง
       final dynamic response = await _supabase.rpc(
         'create_order_with_stock',
-        params: {
-          'p_items': itemsPayload,
-        },
+        params: {'p_items': itemsPayload},
       );
 
       final int orderId = response is int
@@ -152,11 +147,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => PaymentProofScreen(
-            orderId: orderId,
-          ),
-        ),
+        MaterialPageRoute(builder: (_) => PaymentProofScreen(orderId: orderId)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -191,16 +182,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final cart = widget.cartController;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ยืนยันคำสั่งซื้อ'),
-      ),
+      appBar: AppBar(title: const Text('ยืนยันคำสั่งซื้อ')),
       body: AnimatedBuilder(
         animation: cart,
         builder: (context, _) {
           if (cart.items.isEmpty) {
-            return const Center(
-              child: Text('ไม่มีสินค้าในตะกร้า'),
-            );
+            return const Center(child: Text('ไม่มีสินค้าในตะกร้า'));
           }
 
           return ListView(
@@ -208,38 +195,29 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             children: [
               const Text(
                 'รายการสินค้า',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
 
-              ...cart.items.map(
-                (item) {
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.cake),
-                      ),
-                      title: Text(item.product.name),
-                      subtitle: Text(
-                        'ตัวเลือก: '
-                        '${item.selectedVariant?.variantName ?? 'ไม่มี'}\n'
-                        'จำนวน ${item.quantity} × '
-                        '฿${item.unitPrice.toStringAsFixed(2)}',
-                      ),
-                      trailing: Text(
-                        '฿${item.totalPrice.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+              ...cart.items.map((item) {
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: ListTile(
+                    leading: const CircleAvatar(child: Icon(Icons.cake)),
+                    title: Text(item.product.name),
+                    subtitle: Text(
+                      'ตัวเลือก: '
+                      '${item.selectedVariant?.variantName ?? 'ไม่มี'}\n'
+                      'จำนวน ${item.quantity} × '
+                      '฿${item.unitPrice.toStringAsFixed(2)}',
                     ),
-                  );
-                },
-              ),
+                    trailing: Text(
+                      '฿${item.totalPrice.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                );
+              }),
 
               const SizedBox(height: 20),
               const Divider(),
@@ -249,10 +227,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 children: [
                   const Text(
                     'ยอดรวมทั้งหมด',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '฿${cart.totalPrice.toStringAsFixed(2)}',

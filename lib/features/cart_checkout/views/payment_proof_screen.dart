@@ -1,3 +1,4 @@
+// ให้ลูกค้าเลือกและอัปโหลดหลักฐานการชำระเงินของคำสั่งซื้อ
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -7,14 +8,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class PaymentProofScreen extends StatefulWidget {
   final int orderId;
 
-  const PaymentProofScreen({
-    super.key,
-    required this.orderId,
-  });
+  const PaymentProofScreen({super.key, required this.orderId});
 
   @override
-  State<PaymentProofScreen> createState() =>
-      _PaymentProofScreenState();
+  State<PaymentProofScreen> createState() => _PaymentProofScreenState();
 }
 
 class _PaymentProofScreenState extends State<PaymentProofScreen> {
@@ -123,18 +120,14 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
       // =========================================
       await _supabase
           .from('orders')
-          .update({
-            'payment_status': 'pending',
-          })
+          .update({'payment_status': 'pending'})
           .eq('id', widget.orderId);
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'อัปโหลดหลักฐานการชำระเงินสำเร็จ',
-          ),
+          content: Text('อัปโหลดหลักฐานการชำระเงินสำเร็จ'),
           backgroundColor: Colors.green,
         ),
       );
@@ -161,11 +154,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'อัปโหลดสลิป #${widget.orderId}',
-        ),
-      ),
+      appBar: AppBar(title: Text('อัปโหลดสลิป #${widget.orderId}')),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -173,10 +162,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
           children: [
             const Text(
               'หลักฐานการชำระเงิน',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
@@ -188,36 +174,24 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
               width: double.infinity,
               height: 350,
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey,
-                ),
+                border: Border.all(color: Colors.grey),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: _imageBytes == null
                   ? const Column(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.receipt_long,
-                          size: 80,
-                          color: Colors.grey,
-                        ),
+                        Icon(Icons.receipt_long, size: 80, color: Colors.grey),
                         SizedBox(height: 10),
                         Text(
                           'ยังไม่ได้เลือกสลิป',
-                          style: TextStyle(
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(color: Colors.grey),
                         ),
                       ],
                     )
                   : ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.memory(
-                        _imageBytes!,
-                        fit: BoxFit.contain,
-                      ),
+                      child: Image.memory(_imageBytes!, fit: BoxFit.contain),
                     ),
             ),
 
@@ -230,11 +204,8 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
               width: double.infinity,
               height: 50,
               child: OutlinedButton.icon(
-                onPressed:
-                    _isUploading ? null : _pickImage,
-                icon: const Icon(
-                  Icons.photo_library,
-                ),
+                onPressed: _isUploading ? null : _pickImage,
+                icon: const Icon(Icons.photo_library),
                 label: const Text(
                   'เลือกรูปสลิป',
                   style: TextStyle(fontSize: 16),
@@ -251,30 +222,22 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed:
-                    _isUploading
-                        ? null
-                        : _uploadPaymentProof,
+                onPressed: _isUploading ? null : _uploadPaymentProof,
                 icon: _isUploading
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child:
-                            CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(
-                        Icons.cloud_upload,
-                      ),
+                    : const Icon(Icons.cloud_upload),
                 label: Text(
                   _isUploading
                       ? 'กำลังอัปโหลด...'
                       : 'อัปโหลดหลักฐานการชำระเงิน',
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ),

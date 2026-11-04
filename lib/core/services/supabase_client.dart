@@ -1,3 +1,4 @@
+// รวมการเข้าถึง Supabase client สำหรับส่วนบริการของแอป
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {

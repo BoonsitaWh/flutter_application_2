@@ -1,3 +1,4 @@
+// จัดการแคชรายการสินค้าใน SQLite เพื่อเปิดดูข้อมูลที่โหลดไว้ได้
 import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';

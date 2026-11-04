@@ -20,6 +20,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ChatService _service = ChatService();
   final TextEditingController _messageController = TextEditingController();
   late final Stream<List<Map<String, dynamic>>> _messages;
+  final Set<String> _deletedMessageIds = <String>{};
   bool _isSending = false;
 
   @override
@@ -123,7 +124,11 @@ class _ChatScreenState extends State<ChatScreen> {
     if (confirmed != true) return;
 
     try {
-      await _service.deleteMessage(message['id'].toString());
+      final messageId = message['id'].toString();
+      await _service.deleteMessage(messageId);
+      if (mounted) {
+        setState(() => _deletedMessageIds.add(messageId));
+      }
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -155,7 +160,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 final messages = ChatMessageOrder.chronological(
-                  snapshot.data!,
+                  snapshot.data!
+                      .where(
+                        (message) => !_deletedMessageIds.contains(
+                          message['id'].toString(),
+                        ),
+                      )
+                      .toList(growable: false),
                 );
                 if (messages.isEmpty) {
                   return const _ChatMessageState(

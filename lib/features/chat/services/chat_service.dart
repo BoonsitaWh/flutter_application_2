@@ -63,4 +63,42 @@ class ChatService {
       'body': body,
     });
   }
+
+  Future<void> updateMessage({
+    required String messageId,
+    required String text,
+  }) async {
+    final body = text.trim();
+    if (body.isEmpty) throw Exception('ข้อความห้ามเว้นว่าง');
+    if (body.length > 2000) throw Exception('ข้อความยาวเกิน 2,000 ตัวอักษร');
+
+    final updated = await _client
+        .from('chat_messages')
+        .update({
+          'body': body,
+          'edited_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', messageId)
+        .eq('sender_id', _userId)
+        .select('id')
+        .maybeSingle();
+
+    if (updated == null) {
+      throw Exception('แก้ไขได้เฉพาะข้อความของคุณในห้องแชทที่ยังเปิดอยู่');
+    }
+  }
+
+  Future<void> deleteMessage(String messageId) async {
+    final deleted = await _client
+        .from('chat_messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', _userId)
+        .select('id')
+        .maybeSingle();
+
+    if (deleted == null) {
+      throw Exception('ลบได้เฉพาะข้อความของคุณในห้องแชทที่ยังเปิดอยู่');
+    }
+  }
 }

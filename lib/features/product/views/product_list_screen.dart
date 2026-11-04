@@ -354,50 +354,50 @@ class _ProductListScreenState extends State<ProductListScreen> {
               );
             },
           ),
-          AnimatedBuilder(
-            animation: _cartController,
-            builder: (context, _) {
-              return IconButton(
-                icon: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    const Icon(Icons.shopping_cart),
-
-                    if (_cartController.itemCount > 0)
-                      Positioned(
-                        right: -6,
-                        top: -6,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${_cartController.itemCount}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+          if (!widget.isOwner)
+            AnimatedBuilder(
+              animation: _cartController,
+              builder: (context, _) {
+                return IconButton(
+                  icon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(Icons.shopping_cart),
+                      if (_cartController.itemCount > 0)
+                        Positioned(
+                          right: -6,
+                          top: -6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '${_cartController.itemCount}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
+                    ],
+                  ),
+                  tooltip: 'ตะกร้าสินค้า',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CartScreen(cartController: _cartController),
                       ),
-                  ],
-                ),
-                tooltip: 'ตะกร้าสินค้า',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          CartScreen(cartController: _cartController),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
+                    );
+                  },
+                );
+              },
+            ),
 
           PopupMenuButton<String>(
             tooltip: 'เมนูเพิ่มเติม',
@@ -564,6 +564,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                 builder: (context) => ProductDetailScreen(
                                   product: p,
                                   cartController: _cartController,
+                                  isOwner: widget.isOwner,
                                 ),
                               ),
                             );
@@ -729,10 +730,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                           ),
                                         ),
 
-                                      // ปุ่มเพิ่มลงตะกร้า
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: IconButton(
+                                      if (!widget.isOwner)
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: IconButton(
                                           padding: EdgeInsets.zero,
                                           constraints:
                                               const BoxConstraints.tightFor(
@@ -778,8 +779,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                     ),
                                                   );
                                                 },
+                                          ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ),

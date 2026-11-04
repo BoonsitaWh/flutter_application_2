@@ -5,11 +5,13 @@ import '../../cart_checkout/controllers/cart_controller.dart';
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
   final CartController cartController;
+  final bool isOwner;
 
   const ProductDetailScreen({
     super.key,
     required this.product,
     required this.cartController,
+    this.isOwner = false,
   });
 
   @override
@@ -230,8 +232,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // ปุ่มเพิ่มลงตะกร้า
-                  SizedBox(
+                  if (!widget.isOwner)
+                    SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton.icon(
@@ -286,7 +288,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         style: TextStyle(fontSize: 17),
                       ),
                     ),
-                  ),
+                    ),
                 ],
               ),
             ),

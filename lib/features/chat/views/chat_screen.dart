@@ -55,6 +55,83 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _editMessage(Map<String, dynamic> message) async {
+    final controller = TextEditingController(
+      text: message['body']?.toString() ?? '',
+    );
+    final editedText = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('แก้ไขข้อความ'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          minLines: 1,
+          maxLines: 5,
+          maxLength: 2000,
+          decoration: const InputDecoration(
+            labelText: 'ข้อความ',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('ยกเลิก'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('บันทึก'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (editedText == null || editedText.trim() == message['body']) return;
+
+    try {
+      await _service.updateMessage(
+        messageId: message['id'].toString(),
+        text: editedText,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('แก้ไขข้อความไม่สำเร็จ: $error')),
+      );
+    }
+  }
+
+  Future<void> _deleteMessage(Map<String, dynamic> message) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('ลบข้อความ'),
+        content: const Text('ต้องการลบข้อความนี้ใช่ไหม?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('ยกเลิก'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('ลบ'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await _service.deleteMessage(message['id'].toString());
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ลบข้อความไม่สำเร็จ: $error')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final myId = ChatService().currentUserId;
@@ -128,16 +205,67 @@ class _ChatScreenState extends State<ChatScreen> {
                                 fontSize: 16,
                               ),
                             ),
-                            if (createdAt != null) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                '${createdAt.toLocal().hour.toString().padLeft(2, '0')}:${createdAt.toLocal().minute.toString().padLeft(2, '0')}',
-                                style: TextStyle(
-                                  color: isMine ? Colors.white70 : Colors.grey,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (message['edited_at'] != null) ...[
+                                  Text(
+                                    'แก้ไขแล้ว',
+                                    style: TextStyle(
+                                      color: isMine
+                                          ? Colors.white70
+                                          : Colors.grey,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                if (createdAt != null)
+                                  Text(
+                                    '${createdAt.toLocal().hour.toString().padLeft(2, '0')}:${createdAt.toLocal().minute.toString().padLeft(2, '0')}',
+                                    style: TextStyle(
+                                      color: isMine
+                                          ? Colors.white70
+                                          : Colors.grey,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                if (isMine)
+                                  PopupMenuButton<String>(
+                                    tooltip: 'จัดการข้อความ',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 40,
+                                      minHeight: 36,
+                                    ),
+                                    iconSize: 18,
+                                    icon: Icon(
+                                      Icons.more_horiz,
+                                      color: isMine
+                                          ? Colors.white70
+                                          : Colors.grey,
+                                    ),
+                                    onSelected: (action) {
+                                      if (action == 'edit') {
+                                        _editMessage(message);
+                                      } else if (action == 'delete') {
+                                        _deleteMessage(message);
+                                      }
+                                    },
+                                    itemBuilder: (_) => const [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text('แก้ไขข้อความ'),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('ลบข้อความ'),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ),

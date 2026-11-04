@@ -63,6 +63,9 @@ Chat order cases:
 20. ลูกค้าทั่วไปต้องไม่มีสิทธิ์เรียก RPC ตรวจสลิปหรือแก้สถานะออเดอร์ของบัญชีอื่น (ตรวจ RLS/สิทธิ์ function บน Supabase)
 21. สร้างออเดอร์แล้วลูกค้าและร้านได้รับ in-app notification; อัปโหลดสลิปและเปลี่ยนสถานะแล้วแจ้งเตือนผู้เกี่ยวข้อง
 22. เปิดหน้าแจ้งเตือนค้างไว้แล้วมี notification ใหม่ รายการอัปเดตแบบ realtime; แตะอ่านแล้วสถานะอ่านแล้วเปลี่ยน
+23. ลูกค้าและเจ้าของร้านแก้ไขข้อความของตนเองได้ และเห็นสถานะ “แก้ไขแล้ว” แบบ realtime
+24. ผู้ใช้ลบข้อความของตนเองได้ แต่ไม่มีเมนูจัดการข้อความของอีกฝ่าย และ RLS ปฏิเสธการแก้/ลบข้ามผู้ส่ง
+25. หน้า catalog ของเจ้าของร้านไม่มีปุ่มตะกร้าทั้งบน app bar, การ์ดสินค้า และหน้ารายละเอียด
 
 ## Bug log
 
@@ -85,6 +88,7 @@ Chat order cases:
 - [ ] ทดสอบ offline write queue: ยังไม่มี; การเพิ่ม/แก้ไข/ลบสินค้ายังคงต้องสำเร็จบน Supabase ก่อน
 - [ ] Apply `supabase/migrations/20261020_chat.sql` และทดสอบ flow แชท/RLS บน Supabase จริง
 - [ ] Apply `supabase/migrations/20261104_order_notifications.sql` และทดสอบ notification trigger/RLS/Realtime บน Supabase จริง
+- [ ] Apply `supabase/migrations/20261104_chat_message_edit_delete.sql` และทดสอบ edit/delete/RLS บน Supabase จริง
 
 ## Android build verification
 

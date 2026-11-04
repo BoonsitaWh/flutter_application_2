@@ -55,6 +55,8 @@ Orders, payment proofs, roles, notifications, and chat remain cloud-only.
 
 Apply [`../supabase/migrations/20261020_chat.sql`](../supabase/migrations/20261020_chat.sql) in the Supabase SQL Editor. The migration creates the conversation/message tables, indexes, owner-role helper, RLS policies, updated-at trigger, and Realtime publication entries. Verify that the deployed `user_roles` table has `user_id` and `role` columns matching the existing app before applying. The app does not apply this migration automatically and has not changed the live Supabase project.
 
+For message editing/deletion, apply [`../supabase/migrations/20261104_chat_message_edit_delete.sql`](../supabase/migrations/20261104_chat_message_edit_delete.sql) after the chat migration. It adds `edited_at` and grants update/delete only with policies limiting each sender to their own messages in open conversations.
+
 ## Inventory rollout
 
 Apply [`../supabase/migrations/20261029_product_stock.sql`](../supabase/migrations/20261029_product_stock.sql) before using the updated product editor. The app displays and validates the manually maintained available quantity, but checkout does not yet reserve or decrement stock atomically. Add a server-side transactional checkout before treating the quantity as authoritative under concurrent orders.

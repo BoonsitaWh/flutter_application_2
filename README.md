@@ -18,6 +18,8 @@
 
 ก่อนใช้แชท ให้รัน migration [`supabase/migrations/20261020_chat.sql`](supabase/migrations/20261020_chat.sql) ใน Supabase SQL Editor ด้วยบัญชีเจ้าของโปรเจกต์ แล้วตรวจว่าตาราง `user_roles` มี role `owner` ให้บัญชีแอดมินและเปิด Realtime สำหรับสองตารางแล้ว
 
+ก่อนแก้ไข/ลบข้อความแชท ให้รัน `supabase/migrations/20261104_chat_message_edit_delete.sql` หลัง migration แชท เพื่อเพิ่ม `edited_at` และ policy ที่ให้แต่ละคนแก้/ลบได้เฉพาะข้อความของตัวเอง
+
 ก่อนใช้หน้าตรวจสลิป ให้รัน migration `supabase/migrations/20261104_owner_order_review.sql` และตั้ง policy ให้เจ้าของร้านอ่าน `orders`, `order_items`, `payment_proofs` และอ่านไฟล์ใน private bucket `payment-proofs` ได้ การเพิ่ม migration ใน repository ไม่ได้ apply ไปยัง Supabase project โดยอัตโนมัติ
 
 ก่อนยืนยันคำสั่งซื้อ ให้รัน migration `supabase/migrations/20261104_create_order_with_stock.sql` หลังจากสร้างตารางหลักแล้ว เพื่อเพิ่ม RPC ที่ checkout เรียกใช้และตัดสต๊อกแบบ transaction

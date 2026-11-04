@@ -72,7 +72,7 @@ class ChatService {
     if (body.isEmpty) throw Exception('ข้อความห้ามเว้นว่าง');
     if (body.length > 2000) throw Exception('ข้อความยาวเกิน 2,000 ตัวอักษร');
 
-    final updated = await _client
+    final updatedRows = await _client
         .from('chat_messages')
         .update({
           'body': body,
@@ -80,24 +80,22 @@ class ChatService {
         })
         .eq('id', messageId)
         .eq('sender_id', _userId)
-        .select('id')
-        .maybeSingle();
+        .select('id');
 
-    if (updated == null) {
+    if (updatedRows.isEmpty) {
       throw Exception('แก้ไขได้เฉพาะข้อความของคุณในห้องแชทที่ยังเปิดอยู่');
     }
   }
 
   Future<void> deleteMessage(String messageId) async {
-    final deleted = await _client
+    final deletedRows = await _client
         .from('chat_messages')
         .delete()
         .eq('id', messageId)
         .eq('sender_id', _userId)
-        .select('id')
-        .maybeSingle();
+        .select('id');
 
-    if (deleted == null) {
+    if (deletedRows.isEmpty) {
       throw Exception('ลบได้เฉพาะข้อความของคุณในห้องแชทที่ยังเปิดอยู่');
     }
   }

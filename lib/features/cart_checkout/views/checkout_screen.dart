@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../controllers/cart_controller.dart';
@@ -21,9 +22,46 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   bool _isLoading = false;
 
-  // =========================================
-  // สร้างคำสั่งซื้อผ่าน Supabase RPC
-  // =========================================
+  // ตรวจสอบข้อมูลตะกร้าโดยไม่สร้างคำสั่งซื้อ
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _debugCartPayload();
+    });
+  }
+
+  void _debugCartPayload() {
+    final cartItems = widget.cartController.items;
+    final user = _supabase.auth.currentUser;
+
+    debugPrint('========== CART CHECK START ==========');
+    debugPrint('USER ID: ${user?.id}');
+    debugPrint('CART ITEM COUNT: ${cartItems.length}');
+
+    for (final item in cartItems) {
+      final productId = int.tryParse(item.product.id);
+      final variantId = item.selectedVariant == null
+          ? null
+          : int.tryParse(item.selectedVariant!.id);
+
+      debugPrint('PRODUCT NAME: ${item.product.name}');
+      debugPrint('PRODUCT ID: $productId');
+      debugPrint(
+        'VARIANT NAME: ${item.selectedVariant?.variantName ?? "ไม่มี"}',
+      );
+      debugPrint('VARIANT ID: $variantId');
+      debugPrint('QUANTITY: ${item.quantity}');
+      debugPrint(
+        'PAYLOAD: {product_id: $productId, variant_id: $variantId, quantity: ${item.quantity}}',
+      );
+      debugPrint('------------------------------');
+    }
+
+    debugPrint('========== CART CHECK END ==========');
+  }
+
   Future<void> _createOrder() async {
     final cart = widget.cartController;
 
@@ -49,7 +87,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    // ป้องกันการกดสั่งซื้อซ้ำ
     if (_isLoading) return;
 
     setState(() {
@@ -57,10 +94,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
 
     try {
-      // 1. สำเนารายการสินค้า
       final cartItems = List.of(cart.items);
-
       final List<Map<String, dynamic>> itemsPayload = [];
+
+      debugPrint('========== ORDER DEBUG START ==========');
+      debugPrint('USER ID: ${user.id}');
+      debugPrint('CART ITEM COUNT: ${cartItems.length}');
 
       for (final item in cartItems) {
         final int? productId = int.tryParse(item.product.id);
@@ -82,28 +121,41 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           throw Exception('รหัสตัวเลือกสินค้าไม่ถูกต้อง');
         }
 
-        // ส่งเฉพาะข้อมูลที่จำเป็น
-        // ไม่ส่งราคา เพราะ Supabase จะคำนวณเอง
         itemsPayload.add({
           'product_id': productId,
           'variant_id': variantId,
           'quantity': item.quantity,
         });
+
+        debugPrint('PRODUCT NAME: ${item.product.name}');
+        debugPrint('PRODUCT ID: $productId');
+        debugPrint(
+          'VARIANT NAME: ${item.selectedVariant?.variantName ?? "ไม่มี"}',
+        );
+        debugPrint('VARIANT ID: $variantId');
+        debugPrint('QUANTITY: ${item.quantity}');
+        debugPrint('ORDER ITEM PAYLOAD: ${itemsPayload.last}');
       }
 
-      // เก็บยอดจากตะกร้าไว้เป็นยอดสำรองสำหรับแสดงผล
+      debugPrint('FINAL ITEMS PAYLOAD: $itemsPayload');
+
       final double fallbackTotal = cartItems.fold<double>(
         0,
         (total, item) => total + item.totalPrice,
       );
 
-      // 2. เรียก Function create_order_with_stock
+      debugPrint('FALLBACK TOTAL: $fallbackTotal');
+
+      // เรียก Supabase เพื่อสร้างคำสั่งซื้อจริง
       final dynamic response = await _supabase.rpc(
         'create_order_with_stock',
         params: {
           'p_items': itemsPayload,
         },
       );
+
+      debugPrint('SUPABASE ORDER RESPONSE: $response');
+      debugPrint('========== ORDER DEBUG END ==========');
 
       final int orderId = response is int
           ? response
@@ -113,12 +165,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         throw Exception('ไม่ได้รับเลขที่คำสั่งซื้อที่ถูกต้อง');
       }
 
-      // 3. ล้างตะกร้าเมื่อสร้างคำสั่งซื้อสำเร็จ
       cart.clearCart();
 
       if (!mounted) return;
 
-      // 4. อ่านยอดรวมจริงจากฐานข้อมูล
       double orderTotal = fallbackTotal;
 
       try {
@@ -131,13 +181,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
         orderTotal = (orderData['total_amount'] as num).toDouble();
       } catch (e) {
-        // หากอ่านยอดรวมไม่ได้ คำสั่งซื้อยังสร้างสำเร็จแล้ว
         debugPrint('อ่านยอดคำสั่งซื้อไม่สำเร็จ: $e');
       }
 
       if (!mounted) return;
 
-      // 5. แจ้งว่าสั่งซื้อสำเร็จ
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
@@ -162,7 +210,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (!mounted) return;
 
-      // 6. ไปหน้าอัปโหลดหลักฐานการชำระเงิน
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -171,7 +218,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('========== ORDER ERROR ==========');
+      debugPrint('ERROR: $e');
+      debugPrint('STACK TRACE: $stackTrace');
+      debugPrint('=================================');
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -190,9 +242,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  // =========================================
-  // หน้าจอ Checkout
-  // =========================================
   @override
   Widget build(BuildContext context) {
     final cart = widget.cartController;
@@ -220,7 +269,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 12),
 
               ...cart.items.map(
@@ -250,7 +298,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
 
               const SizedBox(height: 20),
-
               const Divider(),
 
               Row(

@@ -16,7 +16,6 @@ class CartScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(title: const Text('🛒 ตะกร้าสินค้า')),
-
           body: items.isEmpty
               ? const Center(
                   child: Column(
@@ -39,7 +38,7 @@ class CartScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(12),
                         itemCount: items.length,
                         itemBuilder: (context, index) {
                           final item = items[index];
@@ -48,144 +47,168 @@ class CartScreen extends StatelessWidget {
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                children: [
-                                  // รูป/ไอคอนสินค้า
-                                  Container(
-                                    width: 70,
-                                    height: 70,
-                                    decoration: BoxDecoration(
-                                      color: Colors.orange.shade50,
-                                      borderRadius: BorderRadius.circular(12),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isNarrow = constraints.maxWidth < 300;
+
+                                final productInfo = Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product.name,
+                                      softWrap: true,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.cake,
-                                      size: 40,
-                                      color: Colors.orange,
-                                    ),
-                                  ),
-
-                                  const SizedBox(width: 12),
-
-                                  // ข้อมูลสินค้า
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          product.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-
-                                        // ตัวเลือกย่อย
-                                        if (variant != null) ...[
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'ตัวเลือก: ${variant.variantName}',
-                                            style: TextStyle(
-                                              color: Colors.grey.shade700,
-                                            ),
-                                          ),
-                                        ],
-
-                                        const SizedBox(height: 5),
-
-                                        // ราคาต่อชิ้น
-                                        Text(
-                                          '฿${item.unitPrice.toStringAsFixed(0)}',
-                                          style: TextStyle(
-                                            color: Theme.of(
-                                              context,
-                                            ).primaryColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 8),
-
-                                        // เพิ่ม/ลดจำนวน
-                                        Row(
-                                          children: [
-                                            IconButton(
-                                              tooltip:
-                                                  'ลดจำนวน ${product.name}',
-                                              onPressed: () {
-                                                cartController.decreaseQuantity(
-                                                  item,
-                                                );
-                                              },
-                                              icon: const Icon(
-                                                Icons.remove_circle_outline,
-                                              ),
-                                            ),
-
-                                            Text(
-                                              '${item.quantity}',
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-
-                                            IconButton(
-                                              tooltip:
-                                                  'เพิ่มจำนวน ${product.name}',
-                                              onPressed: () {
-                                                cartController.increaseQuantity(
-                                                  item,
-                                                );
-                                              },
-                                              icon: const Icon(
-                                                Icons.add_circle_outline,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // ราคารวมของรายการ
-                                  Column(
-                                    children: [
+                                    if (variant != null) ...[
+                                      const SizedBox(height: 4),
                                       Text(
+                                        'ตัวเลือก: ${variant.variantName}',
+                                        softWrap: true,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'ราคาต่อชิ้น ฿${item.unitPrice.toStringAsFixed(0)}',
+                                      style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                );
+
+                                final productImage = Container(
+                                  width: 65,
+                                  height: 65,
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.cake,
+                                    size: 38,
+                                    color: Colors.orange,
+                                  ),
+                                );
+
+                                final quantityControls = Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      tooltip: 'ลดจำนวน',
+                                      visualDensity: VisualDensity.compact,
+                                      onPressed: () {
+                                        cartController.decreaseQuantity(item);
+                                      },
+                                      icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${item.quantity}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      tooltip: 'เพิ่มจำนวน',
+                                      visualDensity: VisualDensity.compact,
+                                      onPressed: () {
+                                        cartController.increaseQuantity(item);
+                                      },
+                                      icon: const Icon(
+                                        Icons.add_circle_outline,
+                                      ),
+                                    ),
+                                  ],
+                                );
+
+                                final totalAndDelete = Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
                                         '฿${item.totalPrice.toStringAsFixed(0)}',
+                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
                                       ),
-
-                                      IconButton(
-                                        tooltip:
-                                            'ลบ ${product.name} ออกจากตะกร้า',
-                                        onPressed: () {
-                                          cartController.removeFromCart(item);
-                                        },
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
+                                    ),
+                                    IconButton(
+                                      tooltip: 'ลบสินค้า',
+                                      onPressed: () {
+                                        cartController.removeFromCart(item);
+                                      },
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    ),
+                                  ],
+                                );
+
+                                return Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: isNarrow
+                                      ? Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Center(child: productImage),
+                                            const SizedBox(height: 10),
+                                            productInfo,
+                                            const Divider(height: 20),
+                                            Wrap(
+                                              alignment:
+                                                  WrapAlignment.spaceBetween,
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              children: [
+                                                quantityControls,
+                                                totalAndDelete,
+                                              ],
+                                            ),
+                                          ],
+                                        )
+                                      : Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                productImage,
+                                                const SizedBox(width: 12),
+                                                Expanded(child: productInfo),
+                                              ],
+                                            ),
+                                            const Divider(height: 20),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                quantityControls,
+                                                totalAndDelete,
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                );
+                              },
                             ),
                           );
                         },
                       ),
                     ),
 
-                    // =========================
-                    // สรุปราคารวม
-                    // =========================
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -214,9 +237,7 @@ class CartScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 8),
-
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -234,26 +255,21 @@ class CartScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 15),
-
-                          // Checkout
                           SizedBox(
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton.icon(
-                              onPressed: items.isEmpty
-                                  ? null
-                                  : () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => CheckoutScreen(
-                                            cartController: cartController,
-                                          ),
-                                        ),
-                                      );
-                                    },
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CheckoutScreen(
+                                      cartController: cartController,
+                                    ),
+                                  ),
+                                );
+                              },
                               icon: const Icon(Icons.shopping_cart_checkout),
                               label: const Text(
                                 'ดำเนินการสั่งซื้อ',

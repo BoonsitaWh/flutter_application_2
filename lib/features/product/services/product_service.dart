@@ -96,6 +96,14 @@ class ProductService {
     required List<String> variants,
     List<String> imageUrls = const [],
   }) async {
+    // ตรวจสอบบัญชีที่กำลังเข้าสู่ระบบ
+    debugPrint(
+      'CURRENT USER ID: ${_supabase.auth.currentUser?.id}',
+    );
+    debugPrint(
+      'CURRENT USER EMAIL: ${_supabase.auth.currentUser?.email}',
+    );
+
     final productData = await _supabase
         .from('products')
         .insert({
